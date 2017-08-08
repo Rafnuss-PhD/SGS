@@ -46,12 +46,13 @@ if strcmp(krig.method,'sbss')
         pt_krig.mask.res = sub2ind([Res.ny, Res.nx],k0_ss_idx(:,1),k0_ss_idx(:,2));
     else
         n=0;
-        sel_ss_idx=nan(sum(krig.nb(2,1:4)),2);
+        sel_ss_idx=nan(krig.n,2);
         nn=2; % 1 is the point itself... therefore unknown
-        while n<sum(krig.nb(2,1:4)) && nn<=length(krig.ss.el.X_s) && krig.ss.el.dist_s(nn)<=krig.wradius % while not exceed number of point wanted and still inside the ellipse
+
+        while n<krig.n && nn<=krig.ss.el.n % while not exceed number of point wanted and still inside the ellipse
             it = pt.x + krig.ss.el.X_s(nn);
             jt = pt.y + krig.ss.el.Y_s(nn);
-            if it>0 && jt>0 && it<=Res.nx && jt <=Res.ny &&  ~any(Prim.x(pt_krig.mask.prim)==Res.x(it) & Prim.y(pt_krig.mask.prim)==Res.y(jt)) % check to not be outside the grid
+            if it>0 && jt>0 && it<=Res.nx && jt <=Res.ny %&&  ~any(Prim.x(pt_krig.mask.prim)==Res.x(it) & Prim.y(pt_krig.mask.prim)==Res.y(jt)) % check to not be outside the grid
                 if ~isnan(Res.m_ns{i_realisation}(jt,it)) % check if it,jt exist
                     n=n+1;
                     sel_ss_idx(n,:) = [jt it];
@@ -105,11 +106,15 @@ elseif strcmp(krig.method,'sort')
         
     else
         sb_i=1;
-        mask.all=zeros(0,1);
+        mask.all=nan(sum(krig.nb(2,:)),1);
         while sb_i<=sum(krig.nb(2,:)) && sb_i<=numel(dist_s) && dist_s(sb_i) < krig.wradius
-            mask.all=[mask.all; idx_s(sb_i)];
+            mask.all(sb_i)=idx_s(sb_i);
             sb_i=sb_i+1;
         end
+        mask.all = mask.all(~isnan(mask.all));
+        % if numel(mask.all)==0;
+        %     mask.all=zeros(0,1);
+        % end
     end
     
     pt_krig.mask.prim = mask.all(mask.all<=Prim.n);
@@ -139,6 +144,42 @@ elseif strcmp(krig.method,'minkmex')
     pt_krig.mask.prim = mask.all(mask.all<=Prim.n);
     pt_krig.mask.res = mask.res(mask.all(mask.all>Prim.n)-Prim.n);
     
+
+elseif strcmp(krig.method,'partialSort')
+   
+    mask.res = Res.sim.xy_r{i_realisation}(1:pt.i-1);
+    sel_g_ini=[ [Prim.x Prim.y]; [Res.x(Res.sim.x_r{i_realisation}(1:pt.i-1))  Res.y(Res.sim.y_r{i_realisation}(1:pt.i-1))]];
+
+    center = [Res.x(pt.x) Res.y(pt.y)];
+    dist = sqrt( ((sel_g_ini(:,1)-center(1))/krig.covar(1).range(1)).^2 + ((sel_g_ini(:,2)-center(2))/krig.covar(1).range(2)).^2 );
+
+    mask.all = find(dist <= krig.wradius);
+    % idx = partial_sort_index(dist(mask.all), sum(krig.nb(2,:)));
+    if numel(mask.all)>0
+        [~, idx] = firstKSmallest(dist(mask.all), sum(krig.nb(2,:)));
+        idx=idx';
+    else
+        idx=mask.all;
+    end
+
+    mask.all = mask.all(idx);
+    
+    pt_krig.mask.prim = mask.all(mask.all<=Prim.n);
+    pt_krig.mask.res = mask.res(mask.all(mask.all>Prim.n)-Prim.n);
+    
+elseif strcmp(krig.method,'knnsearch')
+    mask.res = Res.sim.xy_r{i_realisation}(1:pt.i-1);
+    sel_g_ini=[ [Prim.x Prim.y]; [Res.x(Res.sim.x_r{i_realisation}(1:pt.i-1))  Res.y(Res.sim.y_r{i_realisation}(1:pt.i-1))]];
+
+    center = [Res.x(pt.x) Res.y(pt.y)];
+   
+    IDX = knnsearch(sel_g_ini,center,'K',krig.n);
+    
+    mask.all = IDX;    
+    
+    pt_krig.mask.prim = mask.all(mask.all<=Prim.n);
+    pt_krig.mask.res = mask.res(mask.all(mask.all>Prim.n)-Prim.n);
+        
 else
     error(['Not possible neigh search method: ' krig.method ' (smart,sbss,nearest)'])
 end

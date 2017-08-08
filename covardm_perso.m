@@ -1,7 +1,7 @@
 function [k] = covardm_perso(x,x0,covar)
 
 % calculer les covariances
-k=zeros(size(x,1),size(x0,1));
+k=sparse(size(x,1),size(x0,1));
 
 for i=1:numel(covar)
     if size(x0,1)==1

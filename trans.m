@@ -48,6 +48,6 @@ end
 
 % perform contractions or dilatations (reduced h)
 
-cx=cx/t;
+  cx=cx/t;
 
   

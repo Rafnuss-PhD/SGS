@@ -25,41 +25,41 @@ if strcmp(parm.path,'linear')
         path = 1:Sim.n;
     end
 elseif  strcmp(parm.path,'spiralin') || strcmp(parm.path,'spiralout') || strcmp(parm.path,'maximize')
-    dist = Inf*ones(Sim.n,1);
+    dist_ = Inf*ones(Sim.n,1);
     X = Res.X(~isnan(Res.m{1}));
     Y = Res.Y(~isnan(Res.m{1}));
     for i_hard_data=1:numel(X)
         dist_chall = sqrt( (Res.X(Sim.xy)-X(i_hard_data)).^2 + (Res.Y(Sim.xy)-Y(i_hard_data)).^2 );
-        dist = min(dist,dist_chall');
+        dist_c = min(dist_,dist_chall(:));
     end
     if  strcmp(parm.path,'spiralout')
         if parm.path_random
-            id_perm = randperm(numel(dist));
-            dist_perm = dist(id_perm);
+            id_perm = randperm(numel(dist_));
+            dist_perm = dist_(id_perm);
             [~,id_sort] = sort(dist_perm);
             path = id_perm(id_sort);
         else
-            [~,path] = sort(dist);
+            [~,path] = sort(dist_);
         end
     elseif strcmp(parm.path,'spiralin')
         if parm.path_random
-            [dist_perm,id_perm] = randperm(dist);
+            [dist_perm,id_perm] = randperm(dist_);
             [~,id_sort] = sort(dist_perm,'descend');
             path = id_perm(id_sort);
         else
-            [~,path] = sort(dist,'descend');
+            [~,path] = sort(dist_,'descend');
         end
     elseif strcmp(parm.path,'maximize')
         path = nan(Sim.n,1);
         for i_pt = 1:Sim.n
             if parm.path_random && i_pt~=1
-                m=max(dist);
-                path(i_pt) = datasample(find(m==dist),1); % randomize the selection in case of equal distence. (avoid a structural sampling)
+                m=max(dist_);
+                path(i_pt) = datasample(find(m==dist_),1); % randomize the selection in case of equal distence. (avoid a structural sampling)
             else
-                [~,path(i_pt)] = max(dist);
+                [~,path(i_pt)] = max(dist_);
             end
             dist_chall = sqrt( (Res.X(Sim.xy)-Res.X(Sim.xy(path(i_pt)))).^2 + (Res.Y(Sim.xy)-Res.Y(Sim.xy(path(i_pt)))).^2 );
-            dist = min(dist,dist_chall);
+            dist_ = min(dist_,dist_chall);
         end
         
     end
