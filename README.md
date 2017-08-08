@@ -1,2 +1,0 @@
-# SGS
-Sequential Gaussian Simulation

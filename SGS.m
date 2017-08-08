@@ -55,7 +55,9 @@
 % * *Author:* Raphael Nussbaumer (raphael.nussbaumer@unil.ch)
 %
 
-function [Res, t, k, parm, filename] = SGS(Z,grid_gen,parm)
+
+function [Res, t, k, parm, filename] = SGS(Z,parm)
+
 t.global = tic;
 % addpath(genpath('./.'))
 
@@ -67,8 +69,8 @@ t.global = tic;
 % Force input in column
 Z.x=Z.x(:);Z.y=Z.y(:);Z.d=Z.d(:);
 
-% Parameter settings
-if ~isfield(parm, 'seed'),          parm.seed           = rand(); end
+% Paramter settings
+if ~isfield(parm, 'seed'),          parm.seed           = 'shuffle'; end
 rng(parm.seed);
 if ~isfield(parm, 'saveit'),        parm.saveit         = 1; end % bolean, save or not the result of simulation
 if ~isfield(parm, 'name'),          parm.name           = ''; end % name use for saving file
@@ -78,6 +80,9 @@ if ~isfield(parm, 'n_realisation'), parm.n_realisation  = 1; end
 if ~isfield(parm, 'par'),           parm.par            = 1; end
 if ~isfield(parm, 'dist'),          parm.dist           = 0; end
 if ~isfield(parm, 'par_n'),         parm.par_n          = feature('numcores'); end
+if ~isfield(parm, 'nscore'),        parm.nscore         = 1; end
+if ~isfield(parm, 'interp'),        parm.interp         = 'pchip'; end
+
 if ~isfield(parm, 'notify'),
     parm.notify          = 0;
 else
@@ -87,14 +92,16 @@ end
 % Path
 if ~isfield(parm, 'path'),          parm.path            = 'linear'; end
 if ~isfield(parm, 'path_random'),   parm.path_random     = true; end
-if ~isfield(parm, 'varcovar'),      parm.path            = 0; end
+if ~isfield(parm, 'varcovar'),      parm.varcovar        = 0; end
 
 % Scale and weight parameters
-if ~isfield(parm, 'scale')
-    parm.scale = repmat(1:max([grid_gen.sx,grid_gen.sy]),2,1);
-    parm.scale(1,parm.scale(1,:)>grid_gen.sx) = grid_gen.sx;
-    parm.scale(2,parm.scale(2,:)>grid_gen.sy) = grid_gen.sy;
+if ~isfield(parm, 'g') || ~isfield(parm.g, 'scale')
+    parm.g.scale=[6 ; 6];
 end
+if ~isfield(parm, 'g') || ~isfield(parm.g, 'max')
+    parm.g.max=[100 100];
+end
+
 if ~isfield(parm, 'cstk_s') % cstk_s is the scale at which cst is switch on
     if ~isfield(parm, 'cstk'),      parm.cstk           = 1; end % constant path and kriging weight activated or not
     if parm.cstk
@@ -117,8 +124,8 @@ if ~parm.k.quad
 end
 
 if ~isfield(parm, 'k') || ~isfield(parm.k, 'sb') || ~isfield(parm.k.sb, 'nx') || ~isfield(parm.k.sb, 'ny') % super-block grid size (hard data)
-    parm.k.sb.nx    = ceil(grid_gen.x(end)/parm.k.covar(1).range(1)*3);
-    parm.k.sb.ny    = ceil(grid_gen.y(end)/parm.k.covar(1).range(2)*3);
+    parm.k.sb.nx    = ceil( parm.g.max(1)/parm.k.covar(1).range(1)*3);
+    parm.k.sb.ny    = ceil( parm.g.max(2)/parm.k.covar(1).range(2)*3);
 end
 if ~isfield(parm, 'k') || ~isfield(parm.k, 'wradius')
     parm.k.wradius  = Inf;
@@ -142,26 +149,25 @@ assert(size(Z.x,2)<=1,'X.dx is not a vertical vector 1D');
 assert(size(Z.y,2)<=1,'X.y is not a vertical vector 1D');
 assert(all(size(Z.y)==size(Z.x)),'X.x and X.y don''t have the same dimension');
 assert(all(size(Z.d)==size(Z.x)),'X.d and X.x (or X.y) don''t have the same dimension');
-assert(max(parm.scale(:))<=max([grid_gen.sx,grid_gen.sy]),'This scale of simulation does not exist')
-assert(all(parm.scale(1,:)<=grid_gen.sx),'monotonicly increasing scale')
-assert(all(parm.scale(2,:)<=grid_gen.sy),'monotonicly increasing scale')
+assert(size(parm.g.scale,1)==2,'parm.g.scale needs to be 2D' )
 
 % Creation of the grid
-parm.n_scale=size(parm.scale,2);
-grid=cell(parm.n_scale,1);
-for i_scale = 1:parm.n_scale
-    grid{i_scale}.sx=parm.scale(1,i_scale);
-    grid{i_scale}.sy=parm.scale(2,i_scale);
-    grid{i_scale}.nx=2^grid{i_scale}.sx+1;
-    grid{i_scale}.ny=2^grid{i_scale}.sy+1;
-    grid{i_scale}.nxy=grid{i_scale}.nx*grid{i_scale}.ny; % total number of cells
+parm.g.n_scale=size(parm.g.scale,2);
+grid=cell(parm.g.n_scale,1);
+for i_scale = 1:parm.g.n_scale
+    grid{i_scale}.sx = parm.g.scale(1,i_scale);
+    grid{i_scale}.sy = parm.g.scale(2,i_scale);
+    grid{i_scale}.nx = 2^grid{i_scale}.sx+1;
+    grid{i_scale}.ny = 2^grid{i_scale}.sy+1;
+    grid{i_scale}.nxy = grid{i_scale}.nx*grid{i_scale}.ny; % total number of cells
+        
+    grid{i_scale}.x = linspace(0, parm.g.max(1), grid{i_scale}.nx)'; % coordinate of cells center
+    grid{i_scale}.y = linspace(0, parm.g.max(2), grid{i_scale}.ny)';
     
-    grid{i_scale}.dx=grid_gen.x(end)/(grid{i_scale}.nx-1);
-    grid{i_scale}.dy=grid_gen.y(end)/(grid{i_scale}.ny-1);
+    grid{i_scale}.dx = grid{i_scale}.x(2) - grid{i_scale}.x(1);
+    grid{i_scale}.dy = grid{i_scale}.x(2) - grid{i_scale}.x(1);
     
-    grid{i_scale}.x=linspace(0, grid_gen.x(end), grid{i_scale}.nx)'; % coordinate of cells center
-    grid{i_scale}.y=linspace(0, grid_gen.y(end), grid{i_scale}.ny)';
-    grid{i_scale}.xy=(1:grid{i_scale}.nxy)';
+    grid{i_scale}.xy = (1:grid{i_scale}.nxy)';
     
     [grid{i_scale}.X, grid{i_scale}.Y] = meshgrid(grid{i_scale}.x,grid{i_scale}.y); % matrix coordinate
 end
@@ -176,7 +182,7 @@ end
 if strcmp(parm.k.method,'sbss')
     k.sb.nx = parm.k.sb.nx; % number of superblock grid
     k.sb.ny = parm.k.sb.ny;
-    [k, Z] = SuperBlockGridCreation(k, grid_gen.x(end), grid_gen.y(end), Z, parm.plot.sb, parm.k.nb(2,5));
+    [k, Z] = SuperBlockGridCreation(k, parm.g.max(1), parm.g.max(2), Z, parm.plot.sb, parm.k.nb(2,5));
 end
 
 
@@ -270,7 +276,7 @@ function [Res,t_out]=SGS_in(Z, k, Nscore, grid, parm)
 
 clear parm.k
 
-Res = cell(parm.n_scale,1);
+Res = cell(numel(grid),1);
 t.toc.scale = [];
 t.toc.cstk = [];
 t.toc.pt = [];
@@ -309,7 +315,7 @@ if parm.varcovar % compute the empirical var-covariance matrix (Emery & Pelaez, 
 end
 
 %% * 1. *Simulation of Scale*
-for i_scale=1:parm.n_scale % for each scale
+for i_scale=1:numel(grid) % for each scale
     t.tic.scale = tic;
     
     %% * 1.1. *INITIATE SCALE SIMULATION*
@@ -469,7 +475,7 @@ for i_scale=1:parm.n_scale % for each scale
                 assert(all(diff(pt.krig.cdf)>0))
             end
             
-            pt.sampled = interp1(pt.krig.cdf, Nscore.support_dist, Res{end}.U(i_pt,i_realisation),'pchip');
+            pt.sampled = interp1(pt.krig.cdf, Nscore.support_dist, Res{end}.U(i_pt,i_realisation),parm.interp);
             
             
             %% * 3.4 *PLOTIT*
@@ -576,9 +582,7 @@ for i_scale=1:parm.n_scale % for each scale
                 plot(pt.x-1, pt.y-1,'o','MarkerSize',node_size,'Color',[0 145 234]/255,'LineWidth',2,'MarkerFaceColor','w');
                
                 % Res{end}.F(i_frame) = getframe(fig3);i_frame=i_frame+1;
-                
-                
-                
+
                 subplot(4,1,4);
                 %plot( Nscore.support_dist, pt.krig.pdf,'Color',[0 145 234]/255,'LineWidth',1.5); % axis 'auto y'
                 %Res{end}.F(i_frame) = getframe(fig3);i_frame=i_frame+1;
