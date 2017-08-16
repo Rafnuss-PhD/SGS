@@ -1,57 +1,41 @@
-function [Res, t, k, parm, filename] = SGS_par(Z, parm)
-
-addpath('./functions/.')
-if ismac
-    % Code to run on Mac plaform
-elseif isunix
-    addpath('./functions/MinMaxSelection-UNIX/.')
-elseif ispc
-    addpath('./functions/MinMaxSelection-PC/.')
-    addpath('./functions/partialSort-PC/.')
-else
-    disp('Platform not supported')
-end
-t.global = tic;
-% addpath(genpath('./.'))
+function [Rest, t, k, parm] = SGS_par(nx,ny,parm)
+feature('setprecision',24);
 
 %% * *INPUT CEHCKING*
 % This section of the code generates a valid parm structure based on the
 % inputted parm. If some parm value haven't been input, this section will
 % fill automatically with defautl value. This may not allowed be the best.
 
-% Force input in column
-Z.x=Z.x(:);Z.y=Z.y(:);Z.d=Z.d(:);
 
 % Paramter settings
-if ~isfield(parm, 'seed'),          parm.seed           = 'shuffle'; end
-rng(parm.seed);
+if ~isfield(parm, 'seed_path'),     parm.seed_path      = 'shuffle'; end
+if ~isfield(parm, 'seed_U'),        parm.seed_U         = 'shuffle'; end
 if ~isfield(parm, 'saveit'),        parm.saveit         = 1; end % bolean, save or not the result of simulation
 if ~isfield(parm, 'name'),          parm.name           = ''; end % name use for saving file
-if ~isfield(parm, 'familyname'),    parm.familyname     = ''; end
-if ~isfield(parm, 'n_realisation'), parm.n_realisation  = 1; end
-if ~isfield(parm, 'par'),           parm.par            = 1; end
-if ~isfield(parm, 'dist'),          parm.dist           = 0; end
-if ~isfield(parm, 'par_n'),         parm.par_n          = feature('numcores'); end
+if ~isfield(parm, 'n_real'),        parm.n_real  = 1; end
 
 
-if ~isfield(parm, 'notify'),
-    parm.notify          = 0;
-else
-    if ~isfield(parm, 'notify_email'), parm.notify_email  = 'rafnuss@gmail.com'; end
+% Kriging parameter
+parm.k.covar = kriginginitiaite(parm.k.covar);
+if ~isfield(parm, 'k') || ~isfield(parm.k, 'method'),  parm.k.method = 'sbss'; end
+if ~isfield(parm, 'k') || ~isfield(parm.k, 'nb'),  parm.k.nb = 30; end
+
+if ~isfield(parm, 'k') || ~isfield(parm.k, 'wradius')
+    parm.k.wradius  = 3;
 end
+k = parm.k;
+
+% Error Computation
+if ~isfield(parm, 'varcovar'),      varcovar        = 0; else
+    varcovar = parm.varcovar;
+end
+
 
 % Path
 if ~isfield(parm, 'path'),          parm.path            = 'linear'; end
-if ~isfield(parm, 'path_random'),   parm.path_random     = true; end
-if ~isfield(parm, 'varcovar'),      parm.varcovar        = 0; end
+if ~isfield(parm, 'path_random'),   parm.path_random     = 1; end
+if ~isfield(parm, 'mg'),            parm.mg              = 1; end
 
-% Scale and weight parameters
-if ~isfield(parm, 'nx') || ~isfield(parm.g, 'scale')
-    parm.g.scale=[6 ; 6];
-end
-if ~isfield(parm, 'g') || ~isfield(parm.g, 'max')
-    parm.g.max=[2^parm.g.scale(1,end) 2^parm.g.scale(2,end)];
-end
 
 if ~isfield(parm, 'cstk_s') % cstk_s is the scale at which cst is switch on
     if ~isfield(parm, 'cstk'),      parm.cstk           = 1; end % constant path and kriging weight activated or not
@@ -62,56 +46,181 @@ if ~isfield(parm, 'cstk_s') % cstk_s is the scale at which cst is switch on
     end
 end
 
-% Kriging parameter
-parm.k.covar = kriginginitiaite(parm.k.covar);
-if ~isfield(parm, 'nscore'),        parm.nscore        =1; end % use normal score (strongly advice to use it.)
-if ~isfield(parm, 'k') || ~isfield(parm.k, 'method'),  parm.k.method = 'sbss'; end
-if ~isfield(parm, 'k') || ~isfield(parm.k, 'quad'),  parm.k.quad = 0; end
-if ~isfield(parm, 'k') || ~isfield(parm.k, 'nb'),  parm.k.nb = [0 0 0 0 0; 5 5 5 5 5]; end
-if ~parm.k.quad
-    parm.k.n = sum(parm.k.nb(2,1:4));
+
+
+%% 1. Creation of the grid an path
+[Y, X] = ndgrid(1:ny,1:nx);
+
+
+%% 2. Define Path
+Path = nan(ny,nx);
+rng(parm.seed_path);
+if parm.mg
+   sx = 1:ceil(log(nx+1)/log(2));
+   sy = 1:ceil(log(ny+1)/log(2));
+   sn = max([numel(sy), numel(sx)]);
+   nb = nan(sn,1);
+   start = zeros(sn+1,1);
+   dx = nan(sn,1); dy = nan(sn,1);
+   path = nan(nx*ny,1);
+   for i_scale = 1:sn
+       dx(i_scale) = 2^(sn-sx(min(i_scale,end)));
+       dy(i_scale) = 2^(sn-sy(min(i_scale,end)));
+       [Y_s,X_s] = ndgrid(1:dy(i_scale):ny,1:dx(i_scale):nx); % matrix coordinate
+       id = find(isnan(Path(:)) & ismember([Y(:) X(:)], [Y_s(:) X_s(:)], 'rows'));
+       nb(i_scale) = numel(id);
+       start(i_scale+1) = start(i_scale)+nb(i_scale);
+       path( start(i_scale)+(1:nb(i_scale)) ) = id(randperm(nb(i_scale)));
+       Path(path( start(i_scale)+(1:nb(i_scale)) )) = start(i_scale)+(1:nb(i_scale));
+   end
+else
+   id=find(isnan(Path));
+   path = id(randperm(numel(id)));
+   Path(path) = 1:numel(id);
+   dx=1; dy=1; nb = numel(id); start=[0 nb]; sn=1;
 end
 
-if ~isfield(parm, 'k') || ~isfield(parm.k, 'sb') || ~isfield(parm.k.sb, 'nx') || ~isfield(parm.k.sb, 'ny') % super-block grid size (hard data)
-    parm.k.sb.nx    = ceil( parm.g.max(1)/parm.k.covar(1).range(1)*3);
-    parm.k.sb.ny    = ceil( parm.g.max(2)/parm.k.covar(1).range(2)*3);
-end
-if ~isfield(parm, 'k') || ~isfield(parm.k, 'wradius')
-    parm.k.wradius  = Inf;
-end
-k = parm.k;
 
 
-% Check the input for correct size dans dimension
-assert(size(Z.d,2)<=1,'X.d is not a vertical vector 1D');
-assert(size(Z.x,2)<=1,'X.dx is not a vertical vector 1D');
-assert(size(Z.y,2)<=1,'X.y is not a vertical vector 1D');
-assert(all(size(Z.y)==size(Z.x)),'X.x and X.y don''t have the same dimension');
-assert(all(size(Z.d)==size(Z.x)),'X.d and X.x (or X.y) don''t have the same dimension');
-assert(isfield(parm, 'nx'), 'Specify a number of cell in x' )
-assert(isfield(parm, 'ny'), 'Specify a number of cell in y' )
+%% 3. Initialization Spiral Search
 
-% Creation of the grid an path
-parm.x=1:nx;
-parm.y=1:ny;
-[parm.X, parm.Y] = meshgrid(parm.x,parm.y);
-
-[Res{i_scale}.sim] = definepath(parm);
-
+% Initialize spiral search stuff which don't change
+x = ceil( min(k.covar(1).range(1)*k.wradius, nx));
+y = ceil( min(k.covar(1).range(2)*k.wradius, ny));
+[ss_Y, ss_X] = ndgrid(-y:y, -x:x);% grid{i_scale} of searching windows
+ss_dist = sqrt( (ss_X/k.covar(1).range(1)).^2 + (ss_Y/k.covar(1).range(2)).^2); % find distence
+ss_id_1 = find(ss_dist <= k.wradius); % filter node behind radius.
+rng(parm.seed_search);
+ss_id_1 = ss_id_1(randperm(numel(ss_id_1)));
+[~, ss_id_2] = sort(ss_dist(ss_id_1)); % sort according distence.
+ss_X_s=ss_X(ss_id_1(ss_id_2)); % sort the axis
+ss_Y_s=ss_Y(ss_id_1(ss_id_2));
+ss_n=numel(ss_X_s); %number of possible neigh
 
 
-
-%% * 1. *SUPERBLOCK GRID CREATION*
-% A mask (Boolean value) of the hard data is assigned to each superblock
-% as follow: Only the n-closest (normalized by the covariance range) points
-% (inside the ellipse/windows) to the centre of the superblock will be
-% true. During the kriging, the mask of the superblock of the estimated
-% point will be used to select the hard to add to the kriging system
-if strcmp(parm.k.method,'sbss') && Z.n>0
-    k.sb.nx = parm.k.sb.nx; % number of superblock grid
-    k.sb.ny = parm.k.sb.ny;
-    [k, Z] = SuperBlockGridCreation(k, parm.g.max(1), parm.g.max(2), Z, parm.plot.sb, parm.k.nb(2,5));
+if parm.mg
+    ss_scale=sn*ones(size(ss_X));
+    for i_scale = sn-1:-1:1
+        x_s = [-fliplr(dx(i_scale):dx(i_scale):x(end)) 0 dx(i_scale):dx(i_scale):x(end)]+(x+1);
+        y_s = [-fliplr(dy(i_scale):dy(i_scale):y(end)) 0 dy(i_scale):dy(i_scale):y(end)]+(y+1);
+        ss_scale(y_s,x_s)=i_scale;
+    end
+    ss_scale_s = ss_scale(ss_id_1(ss_id_2));
+else
+    ss_scale_s = sn*ones(size(ss_id_2));
 end
 
+%% 3. Initialization Covariance Lookup Table
+ss_a0_C = zeros(ss_n,1);
+ss_ab_C = zeros(ss_n);
+for i=1:numel(k.covar)
+    a0_h = sqrt(sum(([ss_Y_s(:) ss_X_s(:)]*k.covar(i).cx).^2,2));
+    ab_h = squareform(pdist([ss_Y_s ss_X_s]*k.covar(i).cx));
+    
+    ss_a0_C = ss_a0_C + kron(k.covar(i).g(a0_h), k.covar(i).c0);
+    ss_ab_C = ss_ab_C + kron(k.covar(i).g(ab_h), k.covar(i).c0);
+end
+% Transform ss.ab_C sparse?
+
+%% 3. Initialization Covariance Lookup Table
+NEIGH = nan(nx*ny,k.nb);
+LAMBDA = nan(nx*ny,k.nb);
+S = nan(nx*ny,1);
+if varcovar,                        
+    LambdaM = nan(nx*ny,k.nb+1);
+end
+
+k_nb = k.nb;
+k_covar_c0 = sum([k.covar.c0]);
+XY_i=[Y(path) X(path)];
+
+%% 3. Loop
+for i_scale = 1:sn
+    ss_id = find(ss_scale_s<=i_scale);
+    ss_XY_s = [ss_Y_s(ss_id) ss_X_s(ss_id)];
+    ss_a0_C_s = ss_a0_C(ss_id);
+    ss_ab_C_s = ss_ab_C(ss_id,ss_id);
+    
+    for i_pt = start(i_scale)+(1:nb(i_scale))
+        n=0;
+        neigh=nan(k_nb,3);
+        for nn = 2:size(ss_XY_s,1) % 1 is the point itself... therefore unknown
+            ijt = XY_i(i_pt,:)+ss_XY_s(nn,:);
+            if ijt(1)>0 && ijt(2)>0 && ijt(1)<=ny && ijt(2)<=nx 
+                if Path(ijt(1),ijt(2)) < i_pt % check if it,jt exist
+                    n=n+1;
+                    neigh(n,:) = [nn ijt];
+                    if n >= k_nb
+                        break;
+                    end
+                end
+            end
+        end
+        
+        if n==0
+            S(i_pt) = k_covar_c0;
+        else
+
+            NEIGH(i_pt,:)= [(neigh(1:n,2:3)-1)*[1 ny]'+1 ; nan(k_nb-n,1)];
+            
+            a0_C = ss_a0_C_s(neigh(1:n,1));
+            ab_C = ss_ab_C_s(neigh(1:n,1), neigh(1:n,1));
+            
+            l = ab_C \ a0_C;
+            LAMBDA(i_pt,:) = [l ; nan(k_nb-n,1)];
+            S(i_pt) = k_covar_c0 - l'*a0_C;
+        end
+        
+        if varcovar
+            LambdaM(i_pt, :) = [1 -LAMBDA(i_pt,:)]./sqrt(S(i_pt));
+        end
+    end
+end
+
+if varcovar
+    LambdaMS=zeros(nx*ny,nx*ny);
+    for i_pt=1:numel(path)
+        n = sum(~isnan(NEIGH(i_pt,:)));
+        LambdaMS(path(i_pt),path(i_pt)) = LambdaM(i_pt, 1);
+        LambdaMS(path(i_pt),NEIGH(i_pt,1:n)) = LambdaM(i_pt, 2:n+1);
+    end
+    CY = sparse(LambdaMS) \ transpose(inv(sparse(LambdaMS)));
+end
+
+if parm.saveit
+    filename=['result-SGS/SIM-', parm.name ,'_', datestr(now,'yyyy-mm-dd_HH-MM-SS'), '.mat'];
+    mkdir('result-SGS/')
+    save(filename, 'parm', 'nx','ny','start','nb', 'path', 'sn', 'k','NEIGH','S','LAMBDA')
+end
+
+%% Realization loop
+
+Rest = nan(ny,nx,parm.n_real);
+parm_seed_U = parm.seed_U;
+
+for i_real=1:parm.n_real
+    Res=nan(ny,nx);
+    rng(parm_seed_U);
+    U=randn(ny,nx);
+    for i_scale = 1:sn
+        for i_pt = start(i_scale)+(1:nb(i_scale))
+            n = ~isnan(NEIGH(i_pt,:));
+            Res(path(i_pt)) = LAMBDA(i_pt,n)*Res(NEIGH(i_pt,n))' + U(i_pt)*S(i_pt);
+
+            figure(1); clf;
+            imagesc(Res); hold on;
+            plot(X(NEIGH(i_pt,n)), Y(NEIGH(i_pt,n)),'xk')
+            caxis([-4 4]); axis equal
+            keyboard
+        end
+    end
+    Rest(:,:,i_real) = Res;
+end
+
+if parm.saveit
+    filename=['result-SGS/SIM-', parm.name ,'_', datestr(now,'yyyy-mm-dd_HH-MM-SS'), '.mat'];
+    mkdir('result-SGS/')
+    save(filename, 'parm','nx','ny', 'Rest', 't', 'k','U')
+end
 
 end

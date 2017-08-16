@@ -14,7 +14,7 @@ function [pt_krig] = kriging(pt,Res,Z,krig,i_realisation)
 % * *Date:* 02.02.2015
 
 % *SELECTION OF NEIGHBOURING POINT*
-pt_krig = neighsearch(pt,Res,Z,krig,i_realisation);
+
 
 sel=[zeros(0,2) ; Z.x(pt_krig.mask.prim) Z.y(pt_krig.mask.prim); Res.X(pt_krig.mask.res) Res.Y(pt_krig.mask.res)];
     
