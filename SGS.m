@@ -1,6 +1,6 @@
 function [Rest, t, k, parm] = SGS(nx,ny,parm)
-feature('setprecision',24);
 
+tik.global = tic;
 %% * *INPUT CEHCKING*
 % This section of the code generates a valid parm structure based on the
 % inputted parm. If some parm value haven't been input, this section will
@@ -10,10 +10,9 @@ feature('setprecision',24);
 % Paramter settings
 if ~isfield(parm, 'seed_path'),     parm.seed_path      = 'shuffle'; end
 if ~isfield(parm, 'seed_U'),        parm.seed_U         = 'shuffle'; end
-if ~isfield(parm, 'saveit'),        parm.saveit         = 1; end % bolean, save or not the result of simulation
+if ~isfield(parm, 'saveit'),        parm.saveit         = 0; end % bolean, save or not the result of simulation
 if ~isfield(parm, 'name'),          parm.name           = ''; end % name use for saving file
 if ~isfield(parm, 'n_real'),        parm.n_real  = 1; end
-
 
 % Kriging parameter
 parm.k.covar = kriginginitiaite(parm.k.covar);
@@ -47,12 +46,12 @@ if ~isfield(parm, 'cstk_s') % cstk_s is the scale at which cst is switch on
 end
 
 
-
 %% 1. Creation of the grid an path
 [Y, X] = ndgrid(1:ny,1:nx);
 
 
 %% 2. Define Path
+tik.path = tic;
 Path = nan(ny,nx);
 rng(parm.seed_path);
 if parm.mg
@@ -79,7 +78,7 @@ else
    Path(path) = 1:numel(id);
    dx=1; dy=1; nb = numel(id); start=[0 nb]; sn=1;
 end
-
+t.path = toc(tik.path);
 
 
 %% 3. Initialization Spiral Search
@@ -122,8 +121,12 @@ for i=1:numel(k.covar)
 end
 % Transform ss.ab_C sparse?
 
-%% 3. Initialization Covariance Lookup Table
-NEIGH = nan(nx*ny,k.nb);
+
+
+%% 3. Simulation
+tik.weight = tic;
+NEIGH_1 = nan(nx*ny,k.nb);
+NEIGH_2 = nan(nx*ny,k.nb);
 LAMBDA = nan(nx*ny,k.nb);
 S = nan(nx*ny,1);
 if varcovar,                        
@@ -134,7 +137,6 @@ k_nb = k.nb;
 k_covar_c0 = sum([k.covar.c0]);
 XY_i=[Y(path) X(path)];
 
-%% 3. Loop
 for i_scale = 1:sn
     ss_id = find(ss_scale_s<=i_scale);
     ss_XY_s = [ss_Y_s(ss_id) ss_X_s(ss_id)];
@@ -143,13 +145,19 @@ for i_scale = 1:sn
     
     for i_pt = start(i_scale)+(1:nb(i_scale))
         n=0;
-        neigh=nan(k_nb,3);
+        %neigh=nan(k_nb,3);
+        neigh=nan(k_nb,1);
+        %neigh2=nan(k_nb,2);
         for nn = 2:size(ss_XY_s,1) % 1 is the point itself... therefore unknown
-            ijt = XY_i(i_pt,:)+ss_XY_s(nn,:);
-            if ijt(1)>0 && ijt(2)>0 && ijt(1)<=ny && ijt(2)<=nx 
+            ijt = XY_i(i_pt,:) + ss_XY_s(nn,:);
+            if ijt(1)>0 && ijt(2)>0 && ijt(1)<=ny && ijt(2)<=nx
                 if Path(ijt(1),ijt(2)) < i_pt % check if it,jt exist
                     n=n+1;
-                    neigh(n,:) = [nn ijt];
+                    %neigh(n,:) = [nn ijt];
+                    neigh(n) = nn;
+                    %neigh2(n,:) = ijt;
+                    NEIGH_1(i_pt,n) = ijt(1);
+                    NEIGH_2(i_pt,n) = ijt(2);
                     if n >= k_nb
                         break;
                     end
@@ -160,11 +168,11 @@ for i_scale = 1:sn
         if n==0
             S(i_pt) = k_covar_c0;
         else
-
-            NEIGH(i_pt,:)= [(neigh(1:n,2:3)-1)*[1 ny]'+1 ; nan(k_nb-n,1)];
+            %neigh=neigh(1:n);
+            %NEIGH(i_pt,:)= [(neigh2(1:n,:)-1)*[1 ny]'+1 ; nan(k_nb-n,1)];
             
-            a0_C = ss_a0_C_s(neigh(1:n,1));
-            ab_C = ss_ab_C_s(neigh(1:n,1), neigh(1:n,1));
+            a0_C = ss_a0_C_s(neigh(1:n));
+            ab_C = ss_ab_C_s(neigh(1:n), neigh(1:n));
             
             l = ab_C \ a0_C;
             LAMBDA(i_pt,:) = [l ; nan(k_nb-n,1)];
@@ -176,8 +184,12 @@ for i_scale = 1:sn
         end
     end
 end
+NEIGH = NEIGH_1 + (NEIGH_2-1)* ny;
+
+t.weight = toc(tik.weight);
 
 if varcovar
+    tik.varcovar = tic;
     LambdaMS=zeros(nx*ny,nx*ny);
     for i_pt=1:numel(path)
         n = sum(~isnan(NEIGH(i_pt,:)));
@@ -185,7 +197,9 @@ if varcovar
         LambdaMS(path(i_pt),NEIGH(i_pt,1:n)) = LambdaM(i_pt, 2:n+1);
     end
     CY = sparse(LambdaMS) \ transpose(inv(sparse(LambdaMS)));
+    t.varcovar = toc(tik.varcovar);
 end
+
 
 if parm.saveit
     filename=['result-SGS/SIM-', parm.name ,'_', datestr(now,'yyyy-mm-dd_HH-MM-SS'), '.mat'];
@@ -195,32 +209,35 @@ end
 
 %% Realization loop
 
-Rest = nan(ny,nx,parm.n_real);
-parm_seed_U = parm.seed_U;
+% tik.real = tic;
+% Rest = nan(ny,nx,parm.n_real);
+% parm_seed_U = parm.seed_U;
+% 
+% for i_real=1:parm.n_real
+%     Res=nan(ny,nx);
+%     rng(parm_seed_U);
+%     U=randn(ny,nx);
+%     for i_scale = 1:sn
+%         for i_pt = start(i_scale)+(1:nb(i_scale))
+%             n = ~isnan(NEIGH(i_pt,:));
+%             Res(path(i_pt)) = LAMBDA(i_pt,n)*Res(NEIGH(i_pt,n))' + U(i_pt)*S(i_pt);
+% 
+% %             figure(1); clf;
+% %             imagesc(Res); hold on;
+% %             plot(X(NEIGH(i_pt,n)), Y(NEIGH(i_pt,n)),'xk')
+% %             caxis([-4 4]); axis equal
+% %             keyboard
+%         end
+%     end
+%     Rest(:,:,i_real) = Res;
+% end
+% 
+% if parm.saveit
+%     filename=['result-SGS/SIM-', parm.name ,'_', datestr(now,'yyyy-mm-dd_HH-MM-SS'), '.mat'];
+%     mkdir('result-SGS/')
+%     save(filename, 'parm','nx','ny', 'Rest', 't', 'k','U')
+% end
 
-for i_real=1:parm.n_real
-    Res=nan(ny,nx);
-    rng(parm_seed_U);
-    U=randn(ny,nx);
-    for i_scale = 1:sn
-        for i_pt = start(i_scale)+(1:nb(i_scale))
-            n = ~isnan(NEIGH(i_pt,:));
-            Res(path(i_pt)) = LAMBDA(i_pt,n)*Res(NEIGH(i_pt,n))' + U(i_pt)*S(i_pt);
-
-            figure(1); clf;
-            imagesc(Res); hold on;
-            plot(X(NEIGH(i_pt,n)), Y(NEIGH(i_pt,n)),'xk')
-            caxis([-4 4]); axis equal
-            keyboard
-        end
-    end
-    Rest(:,:,i_real) = Res;
-end
-
-if parm.saveit
-    filename=['result-SGS/SIM-', parm.name ,'_', datestr(now,'yyyy-mm-dd_HH-MM-SS'), '.mat'];
-    mkdir('result-SGS/')
-    save(filename, 'parm','nx','ny', 'Rest', 't', 'k','U')
-end
-
+t.real = toc(tik.real);
+t.global = toc(tik.global);
 end

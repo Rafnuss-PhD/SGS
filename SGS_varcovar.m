@@ -114,9 +114,7 @@ for i=1:numel(k.covar)
 end
 % Transform ss.ab_C sparse?
 
-%% 3. Initialization Covariance Lookup Table
-
-                     
+%% 3. Initialization Covariance Lookup Table               
 LambdaM = zeros(nx*ny,k.nb+1);
 
 k_covar_c0 = sum([k.covar.c0]);
