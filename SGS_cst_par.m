@@ -1,4 +1,4 @@
-function [Rest, t, k, parm] = SGS(nx,ny,parm)
+function [Rest, t, k, parm] = SGS_cst_par(nx,ny,parm)
 
 tik.global = tic;
 %% * *INPUT CEHCKING*
@@ -23,11 +23,6 @@ if ~isfield(parm, 'k') || ~isfield(parm.k, 'wradius')
     parm.k.wradius  = 3;
 end
 k = parm.k;
-
-% Error Computation
-if ~isfield(parm, 'varcovar'),      varcovar        = 0; else
-    varcovar = parm.varcovar;
-end
 
 
 % Path
@@ -125,13 +120,13 @@ end
 
 %% 3. Simulation
 tik.weight = tic;
-NEIGH_1 = nan(nx*ny,k.nb);
-NEIGH_2 = nan(nx*ny,k.nb);
+NEIGH = nan(nx*ny,k.nb);
+% NEIGH_1 = nan(nx*ny,k.nb);
+% NEIGH_2 = nan(nx*ny,k.nb);
+NEIGH_1 = nan(k.nb,1);
+NEIGH_2 = nan(k.nb,1);
 LAMBDA = nan(nx*ny,k.nb);
 S = nan(nx*ny,1);
-if varcovar,                        
-    LambdaM = nan(nx*ny,k.nb+1);
-end
 
 k_nb = k.nb;
 k_covar_c0 = sum([k.covar.c0]);
@@ -145,19 +140,15 @@ for i_scale = 1:sn
     
     for i_pt = start(i_scale)+(1:nb(i_scale))
         n=0;
-        %neigh=nan(k_nb,3);
         neigh=nan(k_nb,1);
-        %neigh2=nan(k_nb,2);
         for nn = 2:size(ss_XY_s,1) % 1 is the point itself... therefore unknown
             ijt = XY_i(i_pt,:) + ss_XY_s(nn,:);
             if ijt(1)>0 && ijt(2)>0 && ijt(1)<=ny && ijt(2)<=nx
                 if Path(ijt(1),ijt(2)) < i_pt % check if it,jt exist
                     n=n+1;
-                    %neigh(n,:) = [nn ijt];
                     neigh(n) = nn;
-                    %neigh2(n,:) = ijt;
-                    NEIGH_1(i_pt,n) = ijt(1);
-                    NEIGH_2(i_pt,n) = ijt(2);
+                    NEIGH_1(n) = ijt(1);
+                    NEIGH_2(n) = ijt(2);
                     if n >= k_nb
                         break;
                     end
@@ -168,8 +159,7 @@ for i_scale = 1:sn
         if n==0
             S(i_pt) = k_covar_c0;
         else
-            %neigh=neigh(1:n);
-            %NEIGH(i_pt,:)= [(neigh2(1:n,:)-1)*[1 ny]'+1 ; nan(k_nb-n,1)];
+            NEIGH(i_pt,:) = NEIGH_1 + (NEIGH_2-1)* ny;
             
             a0_C = ss_a0_C_s(neigh(1:n));
             ab_C = ss_ab_C_s(neigh(1:n), neigh(1:n));
@@ -179,26 +169,13 @@ for i_scale = 1:sn
             S(i_pt) = k_covar_c0 - l'*a0_C;
         end
         
-        if varcovar
-            LambdaM(i_pt, :) = [1 -LAMBDA(i_pt,:)]./sqrt(S(i_pt));
-        end
+       
+        
     end
 end
-NEIGH = NEIGH_1 + (NEIGH_2-1)* ny;
+
 
 t.weight = toc(tik.weight);
-
-if varcovar
-    tik.varcovar = tic;
-    LambdaMS=zeros(nx*ny,nx*ny);
-    for i_pt=1:numel(path)
-        n = sum(~isnan(NEIGH(i_pt,:)));
-        LambdaMS(path(i_pt),path(i_pt)) = LambdaM(i_pt, 1);
-        LambdaMS(path(i_pt),NEIGH(i_pt,1:n)) = LambdaM(i_pt, 2:n+1);
-    end
-    CY = sparse(LambdaMS) \ transpose(inv(sparse(LambdaMS)));
-    t.varcovar = toc(tik.varcovar);
-end
 
 
 if parm.saveit
@@ -209,34 +186,34 @@ end
 
 %% Realization loop
 
-% tik.real = tic;
-% Rest = nan(ny,nx,parm.n_real);
-% parm_seed_U = parm.seed_U;
-% 
-% for i_real=1:parm.n_real
-%     Res=nan(ny,nx);
-%     rng(parm_seed_U);
-%     U=randn(ny,nx);
-%     for i_scale = 1:sn
-%         for i_pt = start(i_scale)+(1:nb(i_scale))
-%             n = ~isnan(NEIGH(i_pt,:));
-%             Res(path(i_pt)) = LAMBDA(i_pt,n)*Res(NEIGH(i_pt,n))' + U(i_pt)*S(i_pt);
-% 
-% %             figure(1); clf;
-% %             imagesc(Res); hold on;
-% %             plot(X(NEIGH(i_pt,n)), Y(NEIGH(i_pt,n)),'xk')
-% %             caxis([-4 4]); axis equal
-% %             keyboard
-%         end
-%     end
-%     Rest(:,:,i_real) = Res;
-% end
-% 
-% if parm.saveit
-%     filename=['result-SGS/SIM-', parm.name ,'_', datestr(now,'yyyy-mm-dd_HH-MM-SS'), '.mat'];
-%     mkdir('result-SGS/')
-%     save(filename, 'parm','nx','ny', 'Rest', 't', 'k','U')
-% end
+tik.real = tic;
+Rest = nan(ny,nx,parm.n_real);
+parm_seed_U = parm.seed_U;
+
+for i_real=1:parm.n_real
+    Res=nan(ny,nx);
+    rng(parm_seed_U);
+    U=randn(ny,nx);
+    for i_scale = 1:sn
+        for i_pt = start(i_scale)+(1:nb(i_scale))
+            n = ~isnan(NEIGH(i_pt,:));
+            Res(path(i_pt)) = LAMBDA(i_pt,n)*Res(NEIGH(i_pt,n))' + U(i_pt)*S(i_pt);
+
+%             figure(1); clf;
+%             imagesc(Res); hold on;
+%             plot(X(NEIGH(i_pt,n)), Y(NEIGH(i_pt,n)),'xk')
+%             caxis([-4 4]); axis equal
+%             keyboard
+        end
+    end
+    Rest(:,:,i_real) = Res;
+end
+
+if parm.saveit
+    filename=['result-SGS/SIM-', parm.name ,'_', datestr(now,'yyyy-mm-dd_HH-MM-SS'), '.mat'];
+    mkdir('result-SGS/')
+    save(filename, 'parm','nx','ny', 'Rest', 't', 'k','U')
+end
 
 t.real = toc(tik.real);
 t.global = toc(tik.global);
