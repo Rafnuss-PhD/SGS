@@ -73,7 +73,7 @@ else
    Path(path) = 1:numel(id);
    dx=1; dy=1; nb = numel(id); start=[0 nb]; sn=1;
 end
-t.path = toc(tik.path);
+t.path = toc(tik.path)
 
 
 %% 3. Initialization Spiral Search
@@ -123,8 +123,6 @@ tik.weight = tic;
 NEIGH = nan(nx*ny,k.nb);
 % NEIGH_1 = nan(nx*ny,k.nb);
 % NEIGH_2 = nan(nx*ny,k.nb);
-NEIGH_1 = nan(k.nb,1);
-NEIGH_2 = nan(k.nb,1);
 LAMBDA = nan(nx*ny,k.nb);
 S = nan(nx*ny,1);
 
@@ -141,6 +139,8 @@ for i_scale = 1:sn
     for i_pt = start(i_scale)+(1:nb(i_scale))
         n=0;
         neigh=nan(k_nb,1);
+        NEIGH_1 = nan(k.nb,1);
+        NEIGH_2 = nan(k.nb,1);
         for nn = 2:size(ss_XY_s,1) % 1 is the point itself... therefore unknown
             ijt = XY_i(i_pt,:) + ss_XY_s(nn,:);
             if ijt(1)>0 && ijt(2)>0 && ijt(1)<=ny && ijt(2)<=nx
@@ -165,16 +165,12 @@ for i_scale = 1:sn
             ab_C = ss_ab_C_s(neigh(1:n), neigh(1:n));
             
             l = ab_C \ a0_C;
-            LAMBDA(i_pt,:) = [l ; nan(k_nb-n,1)];
+            LAMBDA(i_pt,1:n) = l;
             S(i_pt) = k_covar_c0 - l'*a0_C;
         end
-        
-       
-        
     end
+    disp(['scale: ' num2str(i_scale) '/' num2str(sn)])
 end
-
-
 t.weight = toc(tik.weight);
 
 

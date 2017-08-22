@@ -1,6 +1,6 @@
-function [Rest, t, k, parm] = SGS_varcovar(nx,ny,parm)
+function CY = SGS_varcovar(nx,ny,parm)
 
-tik.global = tic;
+
 %% * *INPUT CEHCKING*
 % This section of the code generates a valid parm structure based on the
 % inputted parm. If some parm value haven't been input, this section will
@@ -14,7 +14,6 @@ if ~isfield(parm, 'saveit'),        parm.saveit         = 1; end % bolean, save 
 if ~isfield(parm, 'name'),          parm.name           = ''; end % name use for saving file
 if ~isfield(parm, 'n_real'),        parm.n_real  = 1; end
 
-
 % Kriging parameter
 parm.k.covar = kriginginitiaite(parm.k.covar);
 if ~isfield(parm, 'k') || ~isfield(parm.k, 'method'),  parm.k.method = 'sbss'; end
@@ -24,11 +23,6 @@ if ~isfield(parm, 'k') || ~isfield(parm.k, 'wradius')
     parm.k.wradius  = 3;
 end
 k = parm.k;
-
-% Error Computation
-if ~isfield(parm, 'varcovar'),      varcovar        = 0; else
-    varcovar = parm.varcovar;
-end
 
 
 % Path
@@ -51,10 +45,9 @@ end
 %% 1. Creation of the grid an path
 [Y, X] = ndgrid(1:ny,1:nx);
 
-
 %% 2. Define Path
 Path = nan(ny,nx);
-rng(parm.seed_path);
+
 if parm.mg
    sx = 1:ceil(log(nx+1)/log(2));
    sy = 1:ceil(log(ny+1)/log(2));
@@ -79,7 +72,6 @@ else
    Path(path) = 1:numel(id);
    dx=1; dy=1; nb = numel(id); start=[0 nb]; sn=1;
 end
-
 
 
 %% 3. Initialization Spiral Search
@@ -122,12 +114,9 @@ for i=1:numel(k.covar)
 end
 % Transform ss.ab_C sparse?
 
-%% 3. Initialization Covariance Lookup Table
+%% 3. Initialization Covariance Lookup Table               
+LambdaM = zeros(nx*ny,k.nb+1);
 
-if varcovar,                        
-
-
-k_nb = k.nb;
 k_covar_c0 = sum([k.covar.c0]);
 XY_i=[Y(path) X(path)];
 
@@ -141,45 +130,34 @@ for i_scale = 1:sn
     
     for i_pt = start(i_scale)+(1:nb(i_scale))
         n=0;
-        neigh=nan(k_nb,3);
+        neigh=nan(k.nb,3);
         for nn = 2:size(ss_XY_s,1) % 1 is the point itself... therefore unknown
             ijt = XY_i(i_pt,:)+ss_XY_s(nn,:);
             if ijt(1)>0 && ijt(2)>0 && ijt(1)<=ny && ijt(2)<=nx 
                 if Path(ijt(1),ijt(2)) < i_pt % check if it,jt exist
                     n=n+1;
                     neigh(n,:) = [nn ijt];
-                    if n >= k_nb
+                    if n >= k.nb
                         break;
                     end
                 end
             end
         end
         
-        if n==0
-            S(i_pt) = k_covar_c0;
-        else
-
-            neigh_id = (neigh(1:n,2:3)-1)*[1 ny]'+1;
-            
-            a0_C = ss_a0_C_s(neigh(1:n,1));
-            ab_C = ss_ab_C_s(neigh(1:n,1), neigh(1:n,1));
-            
-            l = ab_C \ a0_C;
-            S = k_covar_c0 - l'*a0_C;
-        end
+        neigh_id = (neigh(1:n,2:3)-1)*[1 ny]'+1;
         
+        a0_C = ss_a0_C_s(neigh(1:n,1));
+        ab_C = ss_ab_C_s(neigh(1:n,1), neigh(1:n,1));
+        
+        l = ab_C \ a0_C;
+        S = k_covar_c0 - l'*a0_C;
+
         LambdaM(path(i_pt), neigh_id) = l./sqrt(S);
         LambdaM(path(i_pt), path(i_pt)) = -1/sqrt(S);
     end
 end
 
-CY = sparse(LambdaMS) \ transpose(inv(sparse(LambdaMS)));
 
-if parm.saveit
-    filename=['result-SGS/SIM-', parm.name ,'_', datestr(now,'yyyy-mm-dd_HH-MM-SS'), '.mat'];
-    mkdir('result-SGS/')
-    save(filename, 'parm', 'nx','ny','start','nb', 'path', 'sn', 'k','NEIGH','S','LAMBDA')
-end
+CY = sparse(LambdaM) \ transpose(inv(sparse(LambdaM)));
 
-t.global = toc(tik.global);
 end

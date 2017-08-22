@@ -43,11 +43,11 @@ end
 
 
 %% 1. Creation of the grid an path
-[Y, X] = ndgrid(1:ny,1:nx,'uint32');
+[Y, X] = ndgrid(1:ny,1:nx);
 
 %% 2. Define Path
-Path = nan(ny,nx, 'uint32');
-rng(parm.seed_path);
+Path = nan(ny,nx);
+
 if parm.mg
    sx = 1:ceil(log(nx+1)/log(2));
    sy = 1:ceil(log(ny+1)/log(2));
@@ -55,8 +55,15 @@ if parm.mg
    nb = nan(sn,1);
    start = zeros(sn+1,1);
    dx = nan(sn,1); dy = nan(sn,1);
-   path = nan(nx*ny,1, 'uint32');
+   path = nan(nx*ny,1);
    for i_scale = 1:sn
+       if i_scale < parm.seed_path
+           rng('shuffle');
+       else
+           rng('default')
+       end
+       
+       
        dx(i_scale) = 2^(sn-sx(min(i_scale,end)));
        dy(i_scale) = 2^(sn-sy(min(i_scale,end)));
        [Y_s,X_s] = ndgrid(1:dy(i_scale):ny,1:dx(i_scale):nx); % matrix coordinate
