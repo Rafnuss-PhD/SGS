@@ -1,4 +1,4 @@
-function [Rest, t, k, parm] = SGS_trad(nx,ny,parm)
+function [Rest, t, k, parm] = SGS_trad(ny,nx,parm)
 
 tik.global = tic;
 %% * *INPUT CEHCKING*
