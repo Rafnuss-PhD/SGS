@@ -62,8 +62,7 @@ if parm.mg
        else
            rng('default')
        end
-       
-       
+
        dx(i_scale) = 2^(sn-sx(min(i_scale,end)));
        dy(i_scale) = 2^(sn-sy(min(i_scale,end)));
        [Y_s,X_s] = ndgrid(1:dy(i_scale):ny,1:dx(i_scale):nx); % matrix coordinate

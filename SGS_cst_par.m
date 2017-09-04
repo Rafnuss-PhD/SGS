@@ -1,4 +1,4 @@
-function [Rest, t, k, parm] = SGS_cst_par(ny,nx,parm)
+function [Rest, t, k, parm] = SGS_cst_par(nx,ny,parm)
 
 tik.global = tic;
 %% * *INPUT CEHCKING*
@@ -17,6 +17,7 @@ if ~isfield(parm, 'n_real'),        parm.n_real  = 1; end
 % Kriging parameter
 parm.k.covar = kriginginitiaite(parm.k.covar);
 if ~isfield(parm, 'k') || ~isfield(parm.k, 'method'),  parm.k.method = 'sbss'; end
+if ~isfield(parm, 'k') || ~isfield(parm.k, 'lookup'),  parm.k.lookup = false; end
 if ~isfield(parm, 'k') || ~isfield(parm.k, 'nb'),  parm.k.nb = 30; end
 
 if ~isfield(parm, 'k') || ~isfield(parm.k, 'wradius')
@@ -73,7 +74,7 @@ else
    Path(path) = 1:numel(id);
    dx=1; dy=1; nb = numel(id); start=[0 nb]; sn=1;
 end
-t.path = toc(tik.path)
+t.path = toc(tik.path);
 
 
 %% 3. Initialization Spiral Search
@@ -105,14 +106,16 @@ else
 end
 
 %% 3. Initialization Covariance Lookup Table
-ss_a0_C = zeros(ss_n,1);
-ss_ab_C = zeros(ss_n);
-for i=1:numel(k.covar)
-    a0_h = sqrt(sum(([ss_Y_s(:) ss_X_s(:)]*k.covar(i).cx).^2,2));
-    ab_h = squareform(pdist([ss_Y_s ss_X_s]*k.covar(i).cx));
-    
-    ss_a0_C = ss_a0_C + kron(k.covar(i).g(a0_h), k.covar(i).c0);
-    ss_ab_C = ss_ab_C + kron(k.covar(i).g(ab_h), k.covar(i).c0);
+if k.lookup
+    ss_a0_C = zeros(ss_n,1);
+    ss_ab_C = zeros(ss_n);
+    for i=1:numel(k.covar)
+        a0_h = sqrt(sum(([ss_Y_s(:) ss_X_s(:)]*k.covar(i).cx).^2,2));
+        ab_h = squareform(pdist([ss_Y_s ss_X_s]*k.covar(i).cx));
+        
+        ss_a0_C = ss_a0_C + kron(k.covar(i).g(a0_h), k.covar(i).c0);
+        ss_ab_C = ss_ab_C + kron(k.covar(i).g(ab_h), k.covar(i).c0);
+    end
 end
 % Transform ss.ab_C sparse?
 
@@ -133,8 +136,10 @@ XY_i=[Y(path) X(path)];
 for i_scale = 1:sn
     ss_id = find(ss_scale_s<=i_scale);
     ss_XY_s = [ss_Y_s(ss_id) ss_X_s(ss_id)];
-    ss_a0_C_s = ss_a0_C(ss_id);
-    ss_ab_C_s = ss_ab_C(ss_id,ss_id);
+    if k.lookup
+        ss_a0_C_s = ss_a0_C(ss_id);
+        ss_ab_C_s = ss_ab_C(ss_id,ss_id);
+    end
     
     for i_pt = start(i_scale)+(1:nb(i_scale))
         n=0;
@@ -161,8 +166,24 @@ for i_scale = 1:sn
         else
             NEIGH(i_pt,:) = NEIGH_1 + (NEIGH_2-1)* ny;
             
-            a0_C = ss_a0_C_s(neigh(1:n));
-            ab_C = ss_ab_C_s(neigh(1:n), neigh(1:n));
+            if k.lookup
+                a0_C = ss_a0_C_s(neigh(1:n));
+                ab_C = ss_ab_C_s(neigh(1:n), neigh(1:n));
+            else
+                D = pdist([0 0; ss_XY_s(neigh(1:n),:)]*k.covar.cx);
+                C = k.covar.g(D);
+                
+                if n==1
+                    a0_C = C;
+                    ab_C = 1;
+                else
+                    a0_C = C(1:n)';
+                    % Equivalent to : squareform(C(n+1:end));
+                    ab_C = diag(ones(n,1))*0.5;
+                    ab_C(tril(true(n),-1)) = C(n+1:end);
+                    ab_C = ab_C + ab_C';
+                end
+            end
             
             l = ab_C \ a0_C;
             LAMBDA(i_pt,1:n) = l;
