@@ -193,7 +193,7 @@ for i_real=1:parm.n_real
                 S = k_covar_c0 - LAMBDA'*a0_C;
                 
                 NEIGH = NEIGH_1 + (NEIGH_2-1)* ny;
-                Res(path(i_pt)) = LAMBDA'*Res(NEIGH(1:n)) + U(i_pt)*S;
+                Res(path(i_pt)) = LAMBDA'*Res(NEIGH(1:n)) + U(i_pt)*sqrt(S);
             end
             
 % 

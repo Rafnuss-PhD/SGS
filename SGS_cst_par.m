@@ -10,15 +10,16 @@ tik.global = tic;
 % Paramter settings
 if ~isfield(parm, 'seed_path'),     parm.seed_path      = 'shuffle'; end
 if ~isfield(parm, 'seed_U'),        parm.seed_U         = 'shuffle'; end
+if ~isfield(parm, 'seed_search'),   parm.seed_U         = 'shuffle'; end
 if ~isfield(parm, 'saveit'),        parm.saveit         = 0; end % bolean, save or not the result of simulation
 if ~isfield(parm, 'name'),          parm.name           = ''; end % name use for saving file
-if ~isfield(parm, 'n_real'),        parm.n_real  = 1; end
+if ~isfield(parm, 'n_real'),        parm.n_real         = 1; end
 
 % Kriging parameter
 parm.k.covar = kriginginitiaite(parm.k.covar);
-if ~isfield(parm, 'k') || ~isfield(parm.k, 'method'),  parm.k.method = 'sbss'; end
-if ~isfield(parm, 'k') || ~isfield(parm.k, 'lookup'),  parm.k.lookup = false; end
-if ~isfield(parm, 'k') || ~isfield(parm.k, 'nb'),  parm.k.nb = 30; end
+if ~isfield(parm, 'k') || ~isfield(parm.k, 'method'),   parm.k.method = 'sbss'; end
+if ~isfield(parm, 'k') || ~isfield(parm.k, 'lookup'),   parm.k.lookup = false; end
+if ~isfield(parm, 'k') || ~isfield(parm.k, 'nb'),       parm.k.nb = 30; end
 
 if ~isfield(parm, 'k') || ~isfield(parm.k, 'wradius')
     parm.k.wradius  = 3;
@@ -40,6 +41,7 @@ if ~isfield(parm, 'cstk_s') % cstk_s is the scale at which cst is switch on
         parm.cstk_s = Inf; % will always use cstk
     end
 end
+
 
 
 %% 1. Creation of the grid an path
@@ -214,13 +216,15 @@ for i_real=1:parm.n_real
     for i_scale = 1:sn
         for i_pt = start(i_scale)+(1:nb(i_scale))
             n = ~isnan(NEIGH(i_pt,:));
-            Res(path(i_pt)) = LAMBDA(i_pt,n)*Res(NEIGH(i_pt,n))' + U(i_pt)*S(i_pt);
+            Res(path(i_pt)) = LAMBDA(i_pt,n)*Res(NEIGH(i_pt,n))' + U(i_pt)*sqrt(S(i_pt));
 
-%             figure(1); clf;
-%             imagesc(Res); hold on;
-%             plot(X(NEIGH(i_pt,n)), Y(NEIGH(i_pt,n)),'xk')
-%             caxis([-4 4]); axis equal
-%             keyboard
+            if i_pt== start(i_scale)+nb(i_scale)
+            figure(1); clf;
+            imagesc(Res); hold on;
+            plot(X(NEIGH(i_pt,n)), Y(NEIGH(i_pt,n)),'xk')
+            caxis([-4 4]); axis equal
+            keyboard
+            end
         end
     end
     Rest(:,:,i_real) = Res;

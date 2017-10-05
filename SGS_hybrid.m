@@ -240,14 +240,14 @@ for i_real=1:parm.n_real
                 S_t = k_covar_c0 - LAMBDA_t'*a0_C;
                 
                 NEIGH_t = NEIGH_1 + (NEIGH_2-1)* ny;
-                Res(path_real(i_pt)) = LAMBDA_t'*Res(NEIGH_t(1:n)) + U(i_pt)*S_t;
+                Res(path_real(i_pt)) = LAMBDA_t'*Res(NEIGH_t(1:n)) + U(i_pt)*sqrt(S_t);
             end
         end
         
         for i_scale = parm.seed_path:sn
             for i_pt = start(i_scale)+(1:nb(i_scale))
                 n = ~isnan(NEIGH(i_pt,:));
-                Res(path_real(i_pt)) = LAMBDA(i_pt,n)*Res(NEIGH(i_pt,n))' + U(i_pt)*S(i_pt);
+                Res(path_real(i_pt)) = LAMBDA(i_pt,n)*Res(NEIGH(i_pt,n))' + U(i_pt)*sqrt(S(i_pt));
             end
         end
     end
