@@ -60,8 +60,8 @@ if parm.mg
    dx = nan(sn,1); dy = nan(sn,1);
    path = nan(sum(isnan(Path(:))),1);
    for i_scale = 1:sn
-       dx(i_scale) = 2^(sn-sx(min(i_scale,end)));
-       dy(i_scale) = 2^(sn-sy(min(i_scale,end)));
+       dx(i_scale) = 2^(numel(sx)-sx(min(i_scale,end)));
+       dy(i_scale) = 2^(numel(sy)-sy(min(i_scale,end)));
        [Y_s,X_s] = ndgrid(1:dy(i_scale):ny,1:dx(i_scale):nx); % matrix coordinate
        id = find(isnan(Path(:)) & ismember([Y(:) X(:)], [Y_s(:) X_s(:)], 'rows'));
        nb(i_scale) = numel(id);
@@ -83,14 +83,14 @@ t.path = toc(tik.path);
 %% 3. Initialization Spiral Search
 
 % Initialize spiral search stuff which don't change
-x = ceil( min(k.covar(1).range(1)*k.wradius, nx));
-y = ceil( min(k.covar(1).range(2)*k.wradius, ny));
+x = ceil( min(k.covar(1).range(2)*k.wradius, nx));
+y = ceil( min(k.covar(1).range(1)*k.wradius, ny));
 [ss_Y, ss_X] = ndgrid(-y:y, -x:x);% grid{i_scale} of searching windows
-ss_dist = sqrt( (ss_X/k.covar(1).range(1)).^2 + (ss_Y/k.covar(1).range(2)).^2); % find distence
+ss_dist = sqrt( (ss_X/k.covar(1).range(2)).^2 + (ss_Y/k.covar(1).range(1)).^2); % find distence
 ss_id_1 = find(ss_dist <= k.wradius); % filter node behind radius.
 rng(parm.seed_search);
 ss_id_1 = ss_id_1(randperm(numel(ss_id_1)));
-[ss_dist_s, ss_id_2] = sort(ss_dist(ss_id_1)); % sort according distence.
+[~, ss_id_2] = sort(ss_dist(ss_id_1)); % sort according distence.
 ss_X_s=ss_X(ss_id_1(ss_id_2)); % sort the axis
 ss_Y_s=ss_Y(ss_id_1(ss_id_2));
 ss_n=numel(ss_X_s); %number of possible neigh

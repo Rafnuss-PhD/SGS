@@ -1,7 +1,7 @@
 clear all;
 
-parm.k.covar.model = 'spherical';
-parm.k.covar.range0 = [10 10];
+parm.k.covar.model = 'gaussian';
+parm.k.covar.range0 = [20 20]; %y x
 parm.k.covar.azimuth = 0;
 parm.k.covar.c0 = 1;
 parm.k.covar.alpha = 1;
@@ -11,14 +11,14 @@ parm.seed_path = 'shuffle';
 parm.seed_search = 'shuffle';
 parm.seed_U = 'shuffle';
 parm.varcovar = 0;
-parm.k.wradius = 2;
-parm.k.lookup = true;
+parm.k.wradius = 1;
+parm.k.lookup = false;
 
 parm.mg = 0;
 
-nx = 50; % no multigrid
+nx = 100; % no multigrid
 ny = 50;
-parm.k.nb = 4;
+parm.k.nb = 5;
 
 
 % Run the program
@@ -34,7 +34,6 @@ toc
 figure(1); clf;
 imagesc(Res);
 xlabel('x'); ylabel('y'); colorbar; axis equal
-
 
 
 %% Conditional

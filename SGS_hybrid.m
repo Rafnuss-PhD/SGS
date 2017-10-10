@@ -82,10 +82,10 @@ t.path = toc(tik.path);
 
 %% 3. Initialization Spiral Search
 % Initialize spiral search stuff which don't change
-x = ceil( min(k.covar(1).range(1)*k.wradius, nx));
-y = ceil( min(k.covar(1).range(2)*k.wradius, ny));
+x = ceil( min(k.covar(1).range(2)*k.wradius, nx));
+y = ceil( min(k.covar(1).range(1)*k.wradius, ny));
 [ss_Y, ss_X] = ndgrid(-y:y, -x:x);% grid{i_scale} of searching windows
-ss_dist = sqrt( (ss_X/k.covar(1).range(1)).^2 + (ss_Y/k.covar(1).range(2)).^2); % find distence
+ss_dist = sqrt( (ss_X/k.covar(1).range(2)).^2 + (ss_Y/k.covar(1).range(1)).^2); % find distence
 ss_id_1 = find(ss_dist <= k.wradius); % filter node behind radius.
 rng(parm.seed_search);
 ss_id_1 = ss_id_1(randperm(numel(ss_id_1)));
