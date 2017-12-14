@@ -90,7 +90,7 @@ ss_dist = sqrt( (ss_X/k.covar(1).range(2)).^2 + (ss_Y/k.covar(1).range(1)).^2); 
 ss_id_1 = find(ss_dist <= k.wradius); % filter node behind radius.
 rng(parm.seed_search);
 ss_id_1 = ss_id_1(randperm(numel(ss_id_1)));
-[~, ss_id_2] = sort(ss_dist(ss_id_1)); % sort according distence.
+[ss_dist_s, ss_id_2] = sort(ss_dist(ss_id_1)); % sort according distence.
 ss_X_s=ss_X(ss_id_1(ss_id_2)); % sort the axis
 ss_Y_s=ss_Y(ss_id_1(ss_id_2));
 ss_n=numel(ss_X_s); %number of possible neigh
