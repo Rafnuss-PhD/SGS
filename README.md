@@ -2,6 +2,7 @@
 
 Have you ever wanted to generate a Gaussian field? This MATLAB script let you to easily create multiple conditional or unconditional 2D realizations.
 
+
 ## Where to start?
 1. If you are new to Sequential Gaussian Simulation, it might be a good idea to start by there. I provide a short introduction below with a video illustrative.
 2. You should have a look at the Live Script which describe how to use the different function.
@@ -10,11 +11,11 @@ Have you ever wanted to generate a Gaussian field? This MATLAB script let you to
 
 
 ## What is SGS?
-SGS stands for Sequential Gaussian Simulation, as its name suggest, it is a simulation algorithm which generate MultiGaussian field in an iterative manner. Mathematically, it's purpuse is to create a realization ![equation](http://latex.codecogs.com/gif.latex?z%5E%7B%28l%29%7D%28%5Cmathbf%7Bu%7D%29) of a Random Variable ![equation](http://latex.codecogs.com/gif.latex?Z%28%5Cmathbf%7Bu%7D%29%20%5Csim%20%5Cmathcal%7BN%7D%28%5Cboldsymbol%5Cmu_Z%2C%20%5Cboldsymbol%7BC%7D_Z%29). The overall algo can be nicely summerized with:
+SGS stands for Sequential Gaussian Simulation, as its name suggest, it is a simulation algorithm which generate MultiGaussian field in an iterative manner. Mathematically written, it's purpuse is to create a realization ![equation](http://latex.codecogs.com/gif.latex?z%5E%7B%28l%29%7D%28%5Cmathbf%7Bu%7D%29) from a random variable ![equation](http://latex.codecogs.com/gif.latex?Z%28%5Cmathbf%7Bu%7D%29%20%5Csim%20%5Cmathcal%7BN%7D%28%5Cboldsymbol%5Cmu_Z%2C%20%5Cboldsymbol%7BC%7D_Z%29). The overall algo can be nicely summerized with:
 
 ![equation](http://latex.codecogs.com/gif.latex?Z%20%28%5Cboldsymbol%7Bu%7D_i%29%20%3D%20%5Csum_%7Bj%3D1%7D%5E%7Bi-1%7D%20%5Clambda_j%28%5Cboldsymbol%7Bu%7D_i%29%20Z%28%5Cboldsymbol%7Bu%7D_j%29%20&plus;%20%5Csigma_E%20%28%5Cboldsymbol%7Bu%7D_i%29%20U%28%5Cboldsymbol%7Bu%7D_i%29%2C%20%5Cquad%20%5Cforall%20i%3D1%2C%20%5Cldots%2C%20n%2C)
 
-where ![equation](http://latex.codecogs.com/gif.latex?U) is a standard Gaussian vector responsible to the randomness in the sampling of each value and ![equation](http://latex.codecogs.com/gif.latex?5Clambda_j) are the kriging weights.
+where ![equation](http://latex.codecogs.com/gif.latex?U) is a standard Gaussian vector responsible to the randomness in the sampling of each value and ![equation](http://latex.codecogs.com/gif.latex?%5Clambda_j) are the kriging weights.
 
 
 ## What's in this package?
@@ -29,6 +30,7 @@ This package provides different implementation of Sequential Gaussian Simulation
 My first study of SGS focused on better understanding the effect of the different simulation path, that is, the order in which the nodes are simulated. We also tried to provide some guideline on which path to avoir and which one to favor. In a nutshell, a simulation which maximizes the overall distance among the nodes during the simulation shows better performance than the one simulating consecutive nodes. 
 
 Have a look at the paper if you're interested, otherwise, have a look at [a presentation I gave at Geostatistics Valencia 2016](https://www.researchgate.net/publication/318858970_Sequential_Simulation_Path_Biases_and_how_to_live_with_them)
+
 Nussbaumer, Raphaël, Grégoire Mariethoz, Erwan Gloaguen, and Klaus Holliger. 2017. “Which Path to Choose in Sequential Gaussian Simulation.” _Mathematical Geosciences_. Retrieved (http://link.springer.com/10.1007/s11004-017-9699-5).
 
 
@@ -39,7 +41,7 @@ The paper will soon be available...
 
 
 ## Support or Contact
-
 Having trouble with the code? Contact me.
 
-https://www.researchgate.net/project/Simulation-Path-in-Sequential-Gaussian-Simulation
+More publication and presentation on researchgate:
+[![Image](https://upload.wikimedia.org/wikipedia/commons/a/aa/ResearchGate_Logo.png)](https://www.researchgate.net/project/Simulation-Path-in-Sequential-Gaussian-Simulation)
