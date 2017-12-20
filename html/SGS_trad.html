@@ -1,0 +1,394 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Traditional Sequential Gaussian Simulation</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-12-19"><meta name="DC.source" content="SGS_trad.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Traditional Sequential Gaussian Simulation</h1><!--introduction--><p><img vspace="5" hspace="5" src="fx1.jpg" alt=""> </p><pre class="codeoutput error">Error using SGS_trad
+Too many input arguments.
+</pre><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#3">1. Creation of the grid and initialization of path</a></li><li><a href="#4">2. Initialization Spiral Search</a></li><li><a href="#5">3. Initialization of covariance lookup table</a></li><li><a href="#6">4. Realization loop</a></li><li><a href="#8">4.1 Generation of the path</a></li><li><a href="#9">4.2 Loop of scale for multi-grid path</a></li><li><a href="#11">4.2.1 Initializsed the search table of neighbors for the scale</a></li><li><a href="#12">4.2.1 Loop of simulated node</a></li><li><a href="#13">4.2.1.1 Neighborhood search</a></li><li><a href="#14">4.2.1.2 Kriging system solving and simulation</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [Rest, t] = SGS_trad(nx,ny,m,covar,parm)
+</pre><pre class="codeinput">tik.global = tic;
+</pre><h2 id="3">1. Creation of the grid and initialization of path</h2><pre class="codeinput">[Y, X] = ndgrid(1:ny,1:nx);
+<span class="keyword">if</span> parm.mg
+    sx = 1:ceil(log(nx+1)/log(2));
+    sy = 1:ceil(log(ny+1)/log(2));
+    sn = max([numel(sy), numel(sx)]);
+    nb = nan(sn,1);
+    start = zeros(sn+1,1);
+    dx = nan(sn,1); dy = nan(sn,1);
+    <span class="keyword">for</span> i_scale = 1:sn
+        dx(i_scale) = 2^(sn-sx(min(i_scale,end)));
+        dy(i_scale) = 2^(sn-sy(min(i_scale,end)));
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><h2 id="4">2. Initialization Spiral Search</h2><p>Initialize spiral search stuff which don't change</p><pre class="codeinput">x = ceil( min(covar(1).range(2)*parm.wradius, nx));
+y = ceil( min(covar(1).range(1)*parm.wradius, ny));
+[ss_Y, ss_X] = ndgrid(-y:y, -x:x);<span class="comment">% grid{i_scale} of searching windows</span>
+ss_dist = sqrt( (ss_X/covar(1).range(2)).^2 + (ss_Y/covar(1).range(1)).^2); <span class="comment">% find distence</span>
+ss_id_1 = find(ss_dist &lt;= parm.wradius); <span class="comment">% filter node behind radius.</span>
+rng(parm.seed_search);
+ss_id_1 = ss_id_1(randperm(numel(ss_id_1)));
+[~, ss_id_2] = sort(ss_dist(ss_id_1)); <span class="comment">% sort according distence.</span>
+ss_X_s=ss_X(ss_id_1(ss_id_2)); <span class="comment">% sort the axis</span>
+ss_Y_s=ss_Y(ss_id_1(ss_id_2));
+ss_n=numel(ss_X_s); <span class="comment">%number of possible neigh</span>
+
+<span class="keyword">if</span> parm.mg
+    ss_scale=sn*ones(size(ss_X));
+    <span class="keyword">for</span> i_scale = sn-1:-1:1
+        x_s = [-fliplr(dx(i_scale):dx(i_scale):x(end)) 0 dx(i_scale):dx(i_scale):x(end)]+(x+1);
+        y_s = [-fliplr(dy(i_scale):dy(i_scale):y(end)) 0 dy(i_scale):dy(i_scale):y(end)]+(y+1);
+        ss_scale(y_s,x_s)=i_scale;
+    <span class="keyword">end</span>
+    ss_scale_s = ss_scale(ss_id_1(ss_id_2));
+<span class="keyword">else</span>
+    ss_scale_s = sn*ones(size(ss_id_2));
+<span class="keyword">end</span>
+</pre><h2 id="5">3. Initialization of covariance lookup table</h2><pre class="codeinput"><span class="keyword">if</span> parm.lookup
+    ss_a0_C = zeros(ss_n,1);
+    ss_ab_C = zeros(ss_n);
+    <span class="keyword">for</span> i=1:numel(covar)
+        a0_h = sqrt(sum(([ss_Y_s(:) ss_X_s(:)]*covar(i).cx).^2,2));
+        ab_h = squareform(pdist([ss_Y_s ss_X_s]*covar(i).cx));
+
+        ss_a0_C = ss_a0_C + kron(covar(i).g(a0_h), covar(i).c0);
+        ss_ab_C = ss_ab_C + kron(covar(i).g(ab_h), covar(i).c0);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+<span class="comment">% Transform ss.ab_C sparse?</span>
+
+k_covar_c0 = sum([covar.c0]);
+k_nb = k.nb;
+</pre><h2 id="6">4. Realization loop</h2><pre class="codeinput">tik.real = tic;
+Rest = nan(ny,nx,m);
+
+<span class="keyword">for</span> i_real=1:m
+</pre><pre class="codeinput">    Res=nan(ny,nx);
+</pre><h2 id="8">4.1 Generation of the path</h2><pre class="codeinput">    Path = nan(ny,nx);
+    path = nan(nx*ny,1);
+    rng(parm.seed_path);
+    <span class="keyword">if</span> parm.mg
+        <span class="keyword">for</span> i_scale = 1:sn
+            [Y_s,X_s] = ndgrid(1:dy(i_scale):ny,1:dx(i_scale):nx); <span class="comment">% matrix coordinate</span>
+            id = find(isnan(Path(:)) &amp; ismember([Y(:) X(:)], [Y_s(:) X_s(:)], <span class="string">'rows'</span>));
+            nb(i_scale) = numel(id);
+            start(i_scale+1) = start(i_scale)+nb(i_scale);
+            path( start(i_scale)+(1:nb(i_scale)) ) = id(randperm(nb(i_scale)));
+            Path(path( start(i_scale)+(1:nb(i_scale)) )) = start(i_scale)+(1:nb(i_scale));
+        <span class="keyword">end</span>
+    <span class="keyword">else</span>
+        id=find(isnan(Path));
+        path = id(randperm(numel(id)));
+        Path(path) = 1:numel(id);
+        dx=1; dy=1; nb = numel(id); start=[0 nb]; sn=1;
+    <span class="keyword">end</span>
+    XY_i=[Y(path) X(path)];
+
+
+    rng(parm.seed_U);
+    U=randn(ny,nx);
+</pre><h2 id="9">4.2 Loop of scale for multi-grid path</h2><pre class="codeinput">    <span class="keyword">for</span> i_scale = 1:sn
+</pre><h2 id="11">4.2.1 Initializsed the search table of neighbors for the scale</h2><pre class="codeinput">        ss_id = find(ss_scale_s&lt;=i_scale);
+        ss_XY_s = [ss_Y_s(ss_id) ss_X_s(ss_id)];
+        <span class="keyword">if</span> k.lookup
+            ss_a0_C_s = ss_a0_C(ss_id);
+            ss_ab_C_s = ss_ab_C(ss_id,ss_id);
+        <span class="keyword">end</span>
+</pre><h2 id="12">4.2.1 Loop of simulated node</h2><pre class="codeinput">        <span class="keyword">for</span> i_pt = start(i_scale)+(1:nb(i_scale))
+</pre><h2 id="13">4.2.1.1 Neighborhood search</h2><pre class="codeinput">            n=0;
+            neigh=nan(k_nb,1);
+            NEIGH_1 = nan(k_nb,1);
+            NEIGH_2 = nan(k_nb,1);
+            <span class="keyword">for</span> nn = 2:size(ss_XY_s,1) <span class="comment">% 1 is the point itself... therefore unknown</span>
+                ijt = XY_i(i_pt,:) + ss_XY_s(nn,:);
+                <span class="keyword">if</span> ijt(1)&gt;0 &amp;&amp; ijt(2)&gt;0 &amp;&amp; ijt(1)&lt;=ny &amp;&amp; ijt(2)&lt;=nx
+                    <span class="keyword">if</span> Path(ijt(1),ijt(2)) &lt; i_pt <span class="comment">% check if it,jt exist</span>
+                        n=n+1;
+                        neigh(n) = nn;
+                        NEIGH_1(n) = ijt(1);
+                        NEIGH_2(n) = ijt(2);
+                        <span class="keyword">if</span> n &gt;= k_nb
+                            <span class="keyword">break</span>;
+                        <span class="keyword">end</span>
+                    <span class="keyword">end</span>
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+</pre><h2 id="14">4.2.1.2 Kriging system solving and simulation</h2><pre class="codeinput">            <span class="keyword">if</span> n==0
+                Res(path(i_pt)) = U(i_pt)*k_covar_c0;
+                NEIGH=[];
+            <span class="keyword">else</span>
+                <span class="keyword">if</span> k.lookup
+                    a0_C = ss_a0_C_s(neigh(1:n));
+                    ab_C = ss_ab_C_s(neigh(1:n), neigh(1:n));
+                <span class="keyword">else</span>
+                    D = pdist([0 0; ss_XY_s(neigh(1:n),:)]*covar.cx);
+                    C = covar.g(D);
+
+                    <span class="keyword">if</span> n==1
+                        a0_C = C;
+                        ab_C = 1;
+                    <span class="keyword">else</span>
+                        a0_C = C(1:n)';
+                        <span class="comment">% Equivalent to : squareform(C(n+1:end));</span>
+                        ab_C = diag(ones(n,1))*0.5;
+                        ab_C(tril(true(n),-1)) = C(n+1:end);
+                        ab_C = ab_C + ab_C';
+                    <span class="keyword">end</span>
+                <span class="keyword">end</span>
+
+                LAMBDA = ab_C \ a0_C;
+                S = k_covar_c0 - LAMBDA'*a0_C;
+
+                NEIGH = NEIGH_1 + (NEIGH_2-1)* ny;
+                Res(path(i_pt)) = LAMBDA'*Res(NEIGH(1:n)) + U(i_pt)*sqrt(S);
+            <span class="keyword">end</span>
+</pre><pre class="codeinput">        <span class="keyword">end</span>
+</pre><pre class="codeinput">    <span class="keyword">end</span>
+    Rest(:,:,i_real) = Res;
+</pre><pre class="codeinput"><span class="keyword">end</span>
+
+t.real = toc(tik.real);
+t.global = toc(tik.global);
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Traditional Sequential Gaussian Simulation
+% 
+%
+% 
+% <<fx1.jpg>>
+% 
+%%
+
+function [Rest, t] = SGS_trad(nx,ny,m,covar,parm)
+tik.global = tic;
+
+%% 1. Creation of the grid and initialization of path
+[Y, X] = ndgrid(1:ny,1:nx);
+if parm.mg
+    sx = 1:ceil(log(nx+1)/log(2));
+    sy = 1:ceil(log(ny+1)/log(2));
+    sn = max([numel(sy), numel(sx)]);
+    nb = nan(sn,1);
+    start = zeros(sn+1,1);
+    dx = nan(sn,1); dy = nan(sn,1);
+    for i_scale = 1:sn
+        dx(i_scale) = 2^(sn-sx(min(i_scale,end)));
+        dy(i_scale) = 2^(sn-sy(min(i_scale,end)));
+    end
+end
+
+
+%% 2. Initialization Spiral Search
+% Initialize spiral search stuff which don't change
+x = ceil( min(covar(1).range(2)*parm.wradius, nx));
+y = ceil( min(covar(1).range(1)*parm.wradius, ny));
+[ss_Y, ss_X] = ndgrid(-y:y, -x:x);% grid{i_scale} of searching windows
+ss_dist = sqrt( (ss_X/covar(1).range(2)).^2 + (ss_Y/covar(1).range(1)).^2); % find distence
+ss_id_1 = find(ss_dist <= parm.wradius); % filter node behind radius.
+rng(parm.seed_search);
+ss_id_1 = ss_id_1(randperm(numel(ss_id_1)));
+[~, ss_id_2] = sort(ss_dist(ss_id_1)); % sort according distence.
+ss_X_s=ss_X(ss_id_1(ss_id_2)); % sort the axis
+ss_Y_s=ss_Y(ss_id_1(ss_id_2));
+ss_n=numel(ss_X_s); %number of possible neigh
+
+if parm.mg
+    ss_scale=sn*ones(size(ss_X));
+    for i_scale = sn-1:-1:1
+        x_s = [-fliplr(dx(i_scale):dx(i_scale):x(end)) 0 dx(i_scale):dx(i_scale):x(end)]+(x+1);
+        y_s = [-fliplr(dy(i_scale):dy(i_scale):y(end)) 0 dy(i_scale):dy(i_scale):y(end)]+(y+1);
+        ss_scale(y_s,x_s)=i_scale;
+    end
+    ss_scale_s = ss_scale(ss_id_1(ss_id_2));
+else
+    ss_scale_s = sn*ones(size(ss_id_2));
+end
+
+%% 3. Initialization of covariance lookup table
+if parm.lookup
+    ss_a0_C = zeros(ss_n,1);
+    ss_ab_C = zeros(ss_n);
+    for i=1:numel(covar)
+        a0_h = sqrt(sum(([ss_Y_s(:) ss_X_s(:)]*covar(i).cx).^2,2));
+        ab_h = squareform(pdist([ss_Y_s ss_X_s]*covar(i).cx));
+        
+        ss_a0_C = ss_a0_C + kron(covar(i).g(a0_h), covar(i).c0);
+        ss_ab_C = ss_ab_C + kron(covar(i).g(ab_h), covar(i).c0);
+    end
+end
+% Transform ss.ab_C sparse?
+
+k_covar_c0 = sum([covar.c0]);
+k_nb = k.nb;
+
+
+%% 4. Realization loop
+tik.real = tic;
+Rest = nan(ny,nx,m);
+
+for i_real=1:m
+    
+    Res=nan(ny,nx);
+    
+    %% 4.1 Generation of the path
+    Path = nan(ny,nx);
+    path = nan(nx*ny,1);
+    rng(parm.seed_path);
+    if parm.mg
+        for i_scale = 1:sn
+            [Y_s,X_s] = ndgrid(1:dy(i_scale):ny,1:dx(i_scale):nx); % matrix coordinate
+            id = find(isnan(Path(:)) & ismember([Y(:) X(:)], [Y_s(:) X_s(:)], 'rows'));
+            nb(i_scale) = numel(id);
+            start(i_scale+1) = start(i_scale)+nb(i_scale);
+            path( start(i_scale)+(1:nb(i_scale)) ) = id(randperm(nb(i_scale)));
+            Path(path( start(i_scale)+(1:nb(i_scale)) )) = start(i_scale)+(1:nb(i_scale));
+        end
+    else
+        id=find(isnan(Path));
+        path = id(randperm(numel(id)));
+        Path(path) = 1:numel(id);
+        dx=1; dy=1; nb = numel(id); start=[0 nb]; sn=1;
+    end
+    XY_i=[Y(path) X(path)];
+    
+    
+    rng(parm.seed_U);
+    U=randn(ny,nx);
+    
+    %% 4.2 Loop of scale for multi-grid path
+    for i_scale = 1:sn
+        
+        %% 4.2.1 Initializsed the search table of neighbors for the scale
+        ss_id = find(ss_scale_s<=i_scale);
+        ss_XY_s = [ss_Y_s(ss_id) ss_X_s(ss_id)];
+        if k.lookup
+            ss_a0_C_s = ss_a0_C(ss_id);
+            ss_ab_C_s = ss_ab_C(ss_id,ss_id);
+        end
+        
+        %% 4.2.1 Loop of simulated node
+        for i_pt = start(i_scale)+(1:nb(i_scale))
+            %% 4.2.1.1 Neighborhood search
+            n=0;
+            neigh=nan(k_nb,1);
+            NEIGH_1 = nan(k_nb,1);
+            NEIGH_2 = nan(k_nb,1);
+            for nn = 2:size(ss_XY_s,1) % 1 is the point itself... therefore unknown
+                ijt = XY_i(i_pt,:) + ss_XY_s(nn,:);
+                if ijt(1)>0 && ijt(2)>0 && ijt(1)<=ny && ijt(2)<=nx
+                    if Path(ijt(1),ijt(2)) < i_pt % check if it,jt exist
+                        n=n+1;
+                        neigh(n) = nn;
+                        NEIGH_1(n) = ijt(1);
+                        NEIGH_2(n) = ijt(2);
+                        if n >= k_nb
+                            break;
+                        end
+                    end
+                end
+            end
+            
+            %% 4.2.1.2 Kriging system solving and simulation
+            if n==0
+                Res(path(i_pt)) = U(i_pt)*k_covar_c0;
+                NEIGH=[];
+            else
+                if k.lookup
+                    a0_C = ss_a0_C_s(neigh(1:n));
+                    ab_C = ss_ab_C_s(neigh(1:n), neigh(1:n));
+                else
+                    D = pdist([0 0; ss_XY_s(neigh(1:n),:)]*covar.cx);
+                    C = covar.g(D);
+                    
+                    if n==1
+                        a0_C = C;
+                        ab_C = 1;
+                    else
+                        a0_C = C(1:n)';
+                        % Equivalent to : squareform(C(n+1:end));
+                        ab_C = diag(ones(n,1))*0.5;
+                        ab_C(tril(true(n),-1)) = C(n+1:end);
+                        ab_C = ab_C + ab_C';
+                    end
+                end
+                
+                LAMBDA = ab_C \ a0_C;
+                S = k_covar_c0 - LAMBDA'*a0_C;
+                
+                NEIGH = NEIGH_1 + (NEIGH_2-1)* ny;
+                Res(path(i_pt)) = LAMBDA'*Res(NEIGH(1:n)) + U(i_pt)*sqrt(S);
+            end
+        end
+    end
+    Rest(:,:,i_real) = Res;
+end
+
+t.real = toc(tik.real);
+t.global = toc(tik.global);
+end
+
+##### SOURCE END #####
+--></body></html>

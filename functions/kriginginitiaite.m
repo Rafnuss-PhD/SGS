@@ -128,7 +128,7 @@ for i=1:numel(covar)
     elseif numel(covar(1).range)==2
         ang=covar(i).azimuth; cang=cos(ang/180*pi); sang=sin(ang/180*pi);
         rot = [cang,-sang;sang,cang];
-        covar(i).cx = rot/diag(covar(i).range);
+        covar(i).cx = rot/diag(fliplr(covar(i).range));
     elseif numel(covar(i).azimuth)==3
         error('3D')
     end

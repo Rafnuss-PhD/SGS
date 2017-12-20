@@ -7,14 +7,13 @@
 % 
 %%
 
-function [Rest, t, parm] = SGS_cst_par_cond(nx,ny,m,covar,neigh,parm,hd)
+function [Rest, t, parm] = SGS_cst(nx,ny,m,covar,neigh,parm)
 tik.global = tic;
 
 %% 1. Creation of the grid and path
 [Y, X] = ndgrid(1:ny,1:nx);
 tik.path = tic;
 Path = nan(ny,nx);
-Path(hd.id) = 0;
 rng(parm.seed_path);
 if parm.mg
    sx = 1:ceil(log(nx+1)/log(2));
@@ -22,8 +21,8 @@ if parm.mg
    sn = max([numel(sy), numel(sx)]);
    nb = nan(sn,1);
    start = zeros(sn+1,1);
+   path = nan(nx*ny,1);
    ds = 2.^(sn-1:-1:0);
-   path = nan(sum(isnan(Path(:))),1);
    for i_scale = 1:sn
        [Y_s,X_s] = ndgrid(1:ds(i_scale):ny,1:ds(i_scale):nx); % matrix coordinate
        id = find(isnan(Path(:)) & ismember([Y(:) X(:)], [Y_s(:) X_s(:)], 'rows'));
@@ -31,8 +30,6 @@ if parm.mg
        start(i_scale+1) = start(i_scale)+nb(i_scale);
        path( start(i_scale)+(1:nb(i_scale)) ) = id(randperm(nb(i_scale)));
        Path(path( start(i_scale)+(1:nb(i_scale)) )) = start(i_scale)+(1:nb(i_scale));
-       % Find the scaloe of hard data.
-       hd.scale( ismember([hd.y hd.x], [Y_s(:) X_s(:)],'rows') & isnan(hd.scale)) =i_scale;
    end
 else
    id=find(isnan(Path));
@@ -52,7 +49,7 @@ ss_dist = sqrt( (ss_X/covar(1).range(2)).^2 + (ss_Y/covar(1).range(1)).^2); % fi
 ss_id_1 = find(ss_dist <= neigh.wradius); % filter node behind radius.
 rng(parm.seed_search);
 ss_id_1 = ss_id_1(randperm(numel(ss_id_1)));
-[ss_dist_s, ss_id_2] = sort(ss_dist(ss_id_1)); % sort according distence.
+[~, ss_id_2] = sort(ss_dist(ss_id_1)); % sort according distence.
 ss_X_s=ss_X(ss_id_1(ss_id_2)); % sort the axis
 ss_Y_s=ss_Y(ss_id_1(ss_id_2));
 ss_n=numel(ss_X_s); %number of possible neigh
@@ -69,7 +66,8 @@ else
     ss_scale_s = sn*ones(size(ss_id_2));
 end
 
-%% 3. Initialization Covariance Lookup Table
+
+%% 3. Initialization of covariance lookup table
 if neigh.lookup
     ss_a0_C = zeros(ss_n,1);
     ss_ab_C = zeros(ss_n);
@@ -82,58 +80,38 @@ if neigh.lookup
     end
 end
 % Transform ss.ab_C sparse?
-k_nb = neigh.nb;
 k_covar_c0 = sum([covar.c0]);
-
+k_nb = neigh.nb;
 
 %% 4. Initizialization of the kriging weights and variance error
 tik.weight = tic;
-NEIGH = nan(nx*ny,neigh.nb);
-% NEIGH_1 = nan(nx*ny,neigh.nb);
-% NEIGH_2 = nan(nx*ny,neigh.nb);
-LAMBDA = nan(nx*ny,neigh.nb);
+NEIGH = nan(nx*ny,k_nb);
+% NEIGH_1 = nan(nx*ny,k_nb);
+% NEIGH_2 = nan(nx*ny,k_nb);
+LAMBDA = nan(nx*ny,k_nb);
 S = nan(nx*ny,1);
 
 XY_i=[Y(path) X(path)];
 
 %% 5 Loop of scale for multi-grid path
 for i_scale = 1:sn
-    %% 5.1 Initializsed the search table of neighbors for the scale
+     %% 5.1 Initializsed the search table of neighbors for the scale
     ss_id = find(ss_scale_s<=i_scale);
-    ss_XY_s_s = [ss_Y_s(ss_id) ss_X_s(ss_id)];
-    ss_dist_s_s = ss_dist_s(ss_id);
+    ss_XY_s = [ss_Y_s(ss_id) ss_X_s(ss_id)];
     if neigh.lookup
         ss_a0_C_s = ss_a0_C(ss_id);
         ss_ab_C_s = ss_ab_C(ss_id,ss_id);
-    else
-        ss_a0_C_s=[];
-        ss_ab_C_s=[];
     end
     
-    %% 5.2 Remove hard data which are on the current scale
-    hd_XY_s = [hd.y(hd.scale>i_scale) hd.x(hd.scale>i_scale)];
-    
-    %% 5.3 Loop of simulated node
+    %% 5.2 Loop of simulated node
     for i_pt = start(i_scale)+(1:nb(i_scale))
-        %% 5.3.1 Hard data
-        hd_XY_d = bsxfun(@minus,hd_XY_s,XY_i(i_pt,:));
-        hd_XY_d = hd_XY_d(hd_XY_d(:,1)<covar(1).range(1)*neigh.wradius &  hd_XY_d(:,2)<covar(1).range(2)*neigh.wradius,:);
-        hd_dist=zeros(size(hd_XY_d,1),1);
-        for i=1:numel(covar)
-            hd_dist=hd_dist+sqrt(sum((hd_XY_d*covar(i).cx).^2,2));
-        end
-        
-        [~, ss_hd_id] = sort( [ hd_dist; ss_dist_s_s]);
-        tmp = [hd_XY_d; ss_XY_s_s];
-        ss_hd_XY_s_s = tmp(ss_hd_id,:);
-        
-        %% 5.3.2 Neighborhood search
+        %% 5.2.1 Neighborhood search
         n=0;
         neigh_nn=nan(k_nb,1);
         NEIGH_1 = nan(k_nb,1);
         NEIGH_2 = nan(k_nb,1);
-        for nn = 2:size(ss_hd_XY_s_s,1) % 1 is the point itself... therefore unknown
-            ijt = XY_i(i_pt,:) + ss_hd_XY_s_s(nn,:);
+        for nn = 2:size(ss_XY_s,1) % 1 is the point itself... therefore unknown
+            ijt = XY_i(i_pt,:) + ss_XY_s(nn,:);
             if ijt(1)>0 && ijt(2)>0 && ijt(1)<=ny && ijt(2)<=nx
                 if Path(ijt(1),ijt(2)) < i_pt % check if it,jt exist
                     n=n+1;
@@ -147,7 +125,7 @@ for i_scale = 1:sn
             end
         end
         
-        %% 5.3.3 Kriging system solving and storing of weights
+        %% 5.2.2 Kriging system solving and storing of weights
         if n==0
             S(i_pt) = k_covar_c0;
         else
@@ -156,7 +134,7 @@ for i_scale = 1:sn
                 a0_C = ss_a0_C_s(neigh_nn(1:n));
                 ab_C = ss_ab_C_s(neigh_nn(1:n), neigh_nn(1:n));
             else
-                D = pdist([0 0; ss_hd_XY_s_s(neigh_nn(1:n),:)]*covar.cx);
+                D = pdist([0 0; ss_XY_s(neigh_nn(1:n),:)]*covar.cx);
                 C = covar.g(D);
                 if n==1
                     a0_C = C;
@@ -178,11 +156,11 @@ for i_scale = 1:sn
 end
 t.weight = toc(tik.weight);
 
-if parm.saveit
-    filename=['result-SGS/SIM-', parm.name ,'_', datestr(now,'yyyy-mm-dd_HH-MM-SS'), '.mat'];
-    mkdir('result-SGS/')
-    save(filename, 'parm', 'nx','ny','start','nb', 'path', 'sn', 'k','NEIGH','S','LAMBDA')
-end
+% if parm.saveit
+%     filename=['result-SGS/SIM-', parm.name ,'_', datestr(now,'yyyy-mm-dd_HH-MM-SS'), '.mat'];
+%     mkdir('result-SGS/')
+%     save(filename, 'parm', 'nx','ny','start','nb', 'path', 'sn', 'k','NEIGH','S','LAMBDA')
+% end
 
 %% 6. Realization loop
 tik.real = tic;
@@ -190,10 +168,9 @@ Rest = nan(ny,nx,m);
 parm_seed_U = parm.seed_U;
 for i_real=1:m
     Res=nan(ny,nx);
-    Res(hd.id)=hd.d;
     rng(parm_seed_U);
     U=randn(ny,nx);
-    %% 6.1 Loop over scale and node for simulation
+    %% 6. Loop over scale and node for simulation
     for i_scale = 1:sn
         for i_pt = start(i_scale)+(1:nb(i_scale))
             n = ~isnan(NEIGH(i_pt,:));
@@ -203,11 +180,11 @@ for i_real=1:m
     Rest(:,:,i_real) = Res;
 end
 
-if parm.saveit
-    filename=['result-SGS/SIM-', parm.name ,'_', datestr(now,'yyyy-mm-dd_HH-MM-SS'), '.mat'];
-    mkdir('result-SGS/')
-    save(filename, 'parm','nx','ny', 'Rest', 't', 'k','U')
-end
+% if parm.saveit
+%     filename=['result-SGS/SIM-', parm.name ,'_', datestr(now,'yyyy-mm-dd_HH-MM-SS'), '.mat'];
+%     mkdir('result-SGS/')
+%     save(filename, 'parm','nx','ny', 'Rest', 't', 'k','U')
+% end
 
 t.real = toc(tik.real);
 t.global = toc(tik.global);
