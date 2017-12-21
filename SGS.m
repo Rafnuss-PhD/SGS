@@ -81,7 +81,7 @@ switch method
         if ~isfield(parm, 'hybrid'), parm.hybrid=5;end
         [Rest, t] = SGS_hybrid(nx,ny,m,covar,neigh,parm);
     case 'varcovar'
-        [Rest, t] = SGS_varcovar(nx,ny,m,covar,neigh,parm);
+        Rest = SGS_varcovar(nx,ny,m,covar,neigh,parm);
     otherwise
         
 end

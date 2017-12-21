@@ -61,9 +61,6 @@ if neigh.lookup
         ss_ab_C = ss_ab_C + kron(covar(i).g(ab_h), covar(i).c0);
     end
 end
-% Transform ss.ab_C sparse?
-k_covar_c0 = sum([covar.c0]);
-k_nb = neigh.nb;
 
 
 %% 4. Realization loop
@@ -112,9 +109,9 @@ for i_real=1:m
         for i_pt = start(i_scale)+(1:nb(i_scale))
             %% 4.2.1.1 Neighborhood search
             n=0;
-            neigh_nn=nan(k_nb,1);
-            NEIGH_1 = nan(k_nb,1);
-            NEIGH_2 = nan(k_nb,1);
+            neigh_nn=nan(neigh.nb,1);
+            NEIGH_1 = nan(neigh.nb,1);
+            NEIGH_2 = nan(neigh.nb,1);
             for nn = 2:size(ss_XY_s,1) % 1 is the point itself... therefore unknown
                 ijt = XY_i(i_pt,:) + ss_XY_s(nn,:);
                 if ijt(1)>0 && ijt(2)>0 && ijt(1)<=ny && ijt(2)<=nx
@@ -123,7 +120,7 @@ for i_real=1:m
                         neigh_nn(n) = nn;
                         NEIGH_1(n) = ijt(1);
                         NEIGH_2(n) = ijt(2);
-                        if n >= k_nb
+                        if n >= neigh.nb
                             break;
                         end
                     end
@@ -132,7 +129,7 @@ for i_real=1:m
             
             %% 4.2.1.2 Kriging system solving and simulation
             if n==0
-                Res(path(i_pt)) = U(i_pt)*k_covar_c0;
+                Res(path(i_pt)) = U(i_pt)*sum([covar.c0]);
                 NEIGH=[];
             else
                 if neigh.lookup
@@ -155,7 +152,7 @@ for i_real=1:m
                 end
                 
                 LAMBDA = ab_C \ a0_C;
-                S = k_covar_c0 - LAMBDA'*a0_C;
+                S = sum([covar.c0]) - LAMBDA'*a0_C;
                 
                 NEIGH = NEIGH_1 + (NEIGH_2-1)* ny;
                 Res(path(i_pt)) = LAMBDA'*Res(NEIGH(1:n)) + U(i_pt)*sqrt(S);

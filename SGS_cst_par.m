@@ -78,16 +78,13 @@ if neigh.lookup
         ss_ab_C = ss_ab_C + kron(covar(i).g(ab_h), covar(i).c0);
     end
 end
-% Transform ss.ab_C sparse?
-k_covar_c0 = sum([covar.c0]);
-k_nb = neigh.nb;
 
 %% 4. Initizialization of the kriging weights and variance error
 tik.weight = tic;
-NEIGH = nan(nx*ny,k_nb);
-% NEIGH_1 = nan(nx*ny,k_nb);
-% NEIGH_2 = nan(nx*ny,k_nb);
-LAMBDA = nan(nx*ny,k_nb);
+NEIGH = nan(nx*ny,neigh.nb);
+% NEIGH_1 = nan(nx*ny,neigh.nb);
+% NEIGH_2 = nan(nx*ny,neigh.nb);
+LAMBDA = nan(nx*ny,neigh.nb);
 S = nan(nx*ny,1);
 
 XY_i=[Y(path) X(path)];
@@ -110,9 +107,9 @@ for i_scale = 1:sn
     parfor i_pt = start(i_scale)+(1:nb(i_scale))
         %% 5.2.1 Neighborhood search
         n=0;
-        neigh_nn=nan(k_nb,1);
-        NEIGH_1 = nan(k_nb,1);
-        NEIGH_2 = nan(k_nb,1);
+        neigh_nn=nan(neigh.nb,1);
+        NEIGH_1 = nan(neigh.nb,1);
+        NEIGH_2 = nan(neigh.nb,1);
         for nn = 2:size(ss_XY_s,1) % 1 is the point itself... therefore unknown
             ijt = XY_i(i_pt,:) + ss_XY_s(nn,:);
             if ijt(1)>0 && ijt(2)>0 && ijt(1)<=ny && ijt(2)<=nx
@@ -121,7 +118,7 @@ for i_scale = 1:sn
                     neigh_nn(n) = nn;
                     NEIGH_1(n) = ijt(1);
                     NEIGH_2(n) = ijt(2);
-                    if n >= k_nb
+                    if n >= neigh.nb
                         break;
                     end
                 end
@@ -130,7 +127,7 @@ for i_scale = 1:sn
         
         %% 5.2.2 Kriging system solving and storing of weights
         if n==0
-            S(i_pt) = k_covar_c0;
+            S(i_pt) = sum([covar.c0]);
         else
             NEIGH(i_pt,:) = NEIGH_1 + (NEIGH_2-1)* ny;
             if neigh.lookup
@@ -151,8 +148,8 @@ for i_scale = 1:sn
                 end
             end
             l = ab_C \ a0_C;
-            LAMBDA(i_pt,:) = [l; nan(k_nb-n,1) ]';
-            S(i_pt) = k_covar_c0 - l'*a0_C;
+            LAMBDA(i_pt,:) = [l; nan(neigh.nb-n,1) ]';
+            S(i_pt) = sum([covar.c0]) - l'*a0_C;
         end
     end
     % disp(['scale: ' num2str(i_scale) '/' num2str(sn)])

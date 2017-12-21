@@ -11,8 +11,8 @@ function [Rest, t, parm] = SGS_cst(nx,ny,m,covar,neigh,parm)
 tik.global = tic;
 
 %% 1. Creation of the grid and path
-[Y, X] = ndgrid(1:ny,1:nx);
 tik.path = tic;
+[Y, X] = ndgrid(1:ny,1:nx);
 Path = nan(ny,nx);
 rng(parm.seed_path);
 if parm.mg
@@ -41,7 +41,6 @@ t.path = toc(tik.path);
 
 
 %% 2. Initialization Spiral Search
-% Initialize spiral search stuff which don't change
 x = ceil( min(covar(1).range(2)*neigh.wradius, nx));
 y = ceil( min(covar(1).range(1)*neigh.wradius, ny));
 [ss_Y, ss_X] = ndgrid(-y:y, -x:x);% grid{i_scale} of searching windows
@@ -79,23 +78,17 @@ if neigh.lookup
         ss_ab_C = ss_ab_C + kron(covar(i).g(ab_h), covar(i).c0);
     end
 end
-% Transform ss.ab_C sparse?
-k_covar_c0 = sum([covar.c0]);
-k_nb = neigh.nb;
 
 %% 4. Initizialization of the kriging weights and variance error
 tik.weight = tic;
-NEIGH = nan(nx*ny,k_nb);
-% NEIGH_1 = nan(nx*ny,k_nb);
-% NEIGH_2 = nan(nx*ny,k_nb);
-LAMBDA = nan(nx*ny,k_nb);
+NEIGH = nan(nx*ny,neigh.nb);
+LAMBDA = nan(nx*ny,neigh.nb);
 S = nan(nx*ny,1);
-
 XY_i=[Y(path) X(path)];
 
 %% 5 Loop of scale for multi-grid path
 for i_scale = 1:sn
-     %% 5.1 Initializsed the search table of neighbors for the scale
+    %% 5.1 Initializsed the search table of neighbors for the scale
     ss_id = find(ss_scale_s<=i_scale);
     ss_XY_s = [ss_Y_s(ss_id) ss_X_s(ss_id)];
     if neigh.lookup
@@ -107,9 +100,9 @@ for i_scale = 1:sn
     for i_pt = start(i_scale)+(1:nb(i_scale))
         %% 5.2.1 Neighborhood search
         n=0;
-        neigh_nn=nan(k_nb,1);
-        NEIGH_1 = nan(k_nb,1);
-        NEIGH_2 = nan(k_nb,1);
+        neigh_nn=nan(neigh.nb,1);
+        NEIGH_1 = nan(neigh.nb,1);
+        NEIGH_2 = nan(neigh.nb,1);
         for nn = 2:size(ss_XY_s,1) % 1 is the point itself... therefore unknown
             ijt = XY_i(i_pt,:) + ss_XY_s(nn,:);
             if ijt(1)>0 && ijt(2)>0 && ijt(1)<=ny && ijt(2)<=nx
@@ -118,7 +111,7 @@ for i_scale = 1:sn
                     neigh_nn(n) = nn;
                     NEIGH_1(n) = ijt(1);
                     NEIGH_2(n) = ijt(2);
-                    if n >= k_nb
+                    if n >= neigh.nb
                         break;
                     end
                 end
@@ -127,7 +120,7 @@ for i_scale = 1:sn
         
         %% 5.2.2 Kriging system solving and storing of weights
         if n==0
-            S(i_pt) = k_covar_c0;
+            S(i_pt) = sum([covar.c0]);
         else
             NEIGH(i_pt,:) = NEIGH_1 + (NEIGH_2-1)* ny;
             if neigh.lookup
@@ -149,7 +142,7 @@ for i_scale = 1:sn
             end
             l = ab_C \ a0_C;
             LAMBDA(i_pt,1:n) = l;
-            S(i_pt) = k_covar_c0 - l'*a0_C;
+            S(i_pt) = sum([covar.c0]) - l'*a0_C;
         end
     end
     % disp(['scale: ' num2str(i_scale) '/' num2str(sn)])
