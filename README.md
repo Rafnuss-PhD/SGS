@@ -1,13 +1,22 @@
 # Sequential Gaussian Simulation
 
-Have you ever wanted to generate a Gaussian field? This MATLAB script let you to easily create multiple conditional or unconditional 2D realizations.
+Have you ever wanted to generate a Gaussian field? This MATLAB script let you to easily create multiple conditional or unconditional 2D realizations of a Gaussian model of your choice.
+
 
 
 ## Where to start?
-1. If you are new to Sequential Gaussian Simulation, it might be a good idea to start by there. I provide a short introduction below with a video illustrative.
-2. You should have a look at the Live Script which describe how to use the different function.
-3. If you're more interested in what's the difference between the various simulation path and which one is the best adapted for you, have a look at the section below
-4. If you wander why is a constant path and what's for.
+The [LiveScript ``script_SGS.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/script_SGS) gives a nice overview of the different implementation of SGS available in this code. 
+
+Code is structure as follows. [``SGS.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/SGS) is the main function, it explains the input and outpur format, it also check the input argument and redirect toward the appropriate implementation of SGS, as listed below:
+
+This package provides different implementation of Sequential Gaussian Simulation, each tailored for another usage.
+- [``SGS_trad.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/SGS_trad): the traditional alogrithm.
+- [``SGS_cst.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/SGS_cst): the constant path algorithm.
+- [``SGS_cst_par.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/SGS_cst_par): the constant path algorithm with parralelisation. 
+- [``SGS_cst_par_cond.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/SGS_cst_par_cond): the constant path algorithm with conditional point.
+- [``SGS_hybrid.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/SGS_hybrid): Hydrid constant/randomized path switching at a certain level of the Multi-grid path.
+- [``SGS_varcovar.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/SGS_varcovar): Compute the full covariance matrice of the simulation.
+
 
 
 ## What is SGS?
@@ -17,13 +26,6 @@ SGS stands for Sequential Gaussian Simulation, as its name suggest, it is a simu
 
 where ![equation](http://latex.codecogs.com/gif.latex?U) is a standard Gaussian vector responsible to the randomness in the sampling of each value and ![equation](http://latex.codecogs.com/gif.latex?%5Clambda_j) are the kriging weights.
 
-
-## What's in this package?
-This package provides different implementation of Sequential Gaussian Simulation, each tailored for another usage.
-- [``SGS_trad.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/SGS_trad): the traditional alogrithm.
-- [``SGS_cst_par.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/SGS_cst_par): the constant path algorithm with parralelisation. 
-- [``SGS_cst_par_cond.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/SGS_cst_par_cond): the constant path algorithm with conditional point.
-- [``SGS_hybrid.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/SGS_hybrid): Hydrid constant/randomized path switching at a certain level of the Multi-grid path.
 
 
 ## Which Simulation path to use for SGS?
@@ -37,7 +39,7 @@ Nussbaumer, Raphaël, Grégoire Mariethoz, Erwan Gloaguen, and Klaus Holliger. 2
 ## SGS with a Constant Path
 In this second paper, I looked at the quite oftenly used technique which consist of using the same simulationp path among multiple realizations in order to be able to reuse the same kriging weights for all of them. In this work we wanted to quantify the amount of bias added with this technique, and provide some recommendation on the implementation. We showed that these biases were quite unsignificant compared to the computational gain obtained. 
 
-The paper will soon be available...
+Nussbaumer, Raphaël, Grégoire Mariethoz, Mathieu Gravey, Erwan Gloaguen, and Klaus Holliger. 2017. “Accelerating Sequential Gaussian Simulation with a Constant Path.” Computers & Geosciences. Retrieved (http://linkinghub.elsevier.com/retrieve/pii/S0098300417304685).
 
 
 ## Support or Contact
