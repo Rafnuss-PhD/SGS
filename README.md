@@ -33,13 +33,13 @@ My first study of SGS focused on better understanding the effect of the differen
 
 Have a look at the paper if you're interested, otherwise, have a look at [a presentation I gave at Geostatistics Valencia 2016](https://www.researchgate.net/publication/318858970_Sequential_Simulation_Path_Biases_and_how_to_live_with_them)
 
-Nussbaumer, Raphaël, Grégoire Mariethoz, Erwan Gloaguen, and Klaus Holliger. 2017. “Which Path to Choose in Sequential Gaussian Simulation.” _Mathematical Geosciences_. Retrieved (http://link.springer.com/10.1007/s11004-017-9699-5).
+Nussbaumer, Raphaël, Grégoire Mariethoz, Erwan Gloaguen, and Klaus Holliger. 2017. “Which Path to Choose in Sequential Gaussian Simulation.” _Mathematical Geosciences_. Retrieved DOI:[10.1007/s11004-017-9699-5](http://link.springer.com/10.1007/s11004-017-9699-5).
 
 
 ## SGS with a Constant Path
 In this second paper, I looked at the quite oftenly used technique which consist of using the same simulationp path among multiple realizations in order to be able to reuse the same kriging weights for all of them. In this work we wanted to quantify the amount of bias added with this technique, and provide some recommendation on the implementation. We showed that these biases were quite unsignificant compared to the computational gain obtained. 
 
-Nussbaumer, Raphaël, Grégoire Mariethoz, Mathieu Gravey, Erwan Gloaguen, and Klaus Holliger. 2017. “Accelerating Sequential Gaussian Simulation with a Constant Path.” Computers & Geosciences. Retrieved (http://linkinghub.elsevier.com/retrieve/pii/S0098300417304685).
+Nussbaumer, Raphaël, Grégoire Mariethoz, Mathieu Gravey, Erwan Gloaguen, and Klaus Holliger. 2017. “Accelerating Sequential Gaussian Simulation with a Constant Path.” Computers & Geosciences. Retrieved DOI:[10.1016/j.cageo.2017.12.006](http://linkinghub.elsevier.com/retrieve/pii/S0098300417304685).
 
 
 ## Support or Contact

@@ -3,7 +3,6 @@
 % Simulation. 
 % Traditional SGS uses a new path for each realization, thus, it's code
 % loop around the realization and the node after. See pseudo-code below
-% <<fx1.jpg>>
 % 
 %%
 

@@ -1,0 +1,234 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>SGS</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-12-21"><meta name="DC.source" content="SGS.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Sequential Gaussian Simulation</a></li><li><a href="#4">1. Checking and formating Input</a></li><li><a href="#5">2. Use the requested method or find the optimal one</a></li><li><a href="#6">3. Saving if requested</a></li></ul></div><h2 id="1">Sequential Gaussian Simulation</h2><p>Traditional SGS produced Gaussian realization</p><p><b>INPUT</b></p><div><ul><li>nx,ny: number of cell in x and y [int]</li><li>m: number of realization [int]</li><li>covar: covariance function structure</li><li>neigh: neighborhood search strategie</li><li>parm: Other paramerter</li></ul></div><pre class="codeinput"><span class="comment">%</span>
+<span class="comment">% *OUPUT*</span>
+<span class="comment">%</span>
+<span class="comment">% * Rest: Realizations matrix (nx,ny,m)</span>
+<span class="comment">% * t: time structure</span>
+</pre><pre class="codeinput"><span class="keyword">function</span> [Rest, t] = SGS(nx,ny,m,covar,neigh,parm, method,hd)
+</pre><pre class="codeinput">addpath(<span class="string">'./functions/'</span>)
+</pre><h2 id="4">1. Checking and formating Input</h2><p>This section of the code generates a valid parm structure based on the inputted parm. If some parm value haven't been input, this section will fill automatically with defautl value. This may not allowed be the best.</p><pre class="codeinput"><span class="comment">% Grid size and realization number</span>
+assert(floor(nx)==nx &amp;&amp; nx&gt;0,<span class="string">'nx must be a positive integer'</span>);
+assert(floor(ny)==ny &amp;&amp; ny&gt;0,<span class="string">'nx must be a positive integer'</span>);
+assert(floor(m)==m &amp;&amp; m&gt;0,<span class="string">'The number of realizations must be a positive integer'</span>);
+
+<span class="comment">% Covariance structure. See |kriginginitiaite.m| for more information</span>
+<span class="keyword">if</span> ~isfield(covar, <span class="string">'model'</span>) ,  covar.model = <span class="string">'spherical'</span>; <span class="keyword">end</span>
+<span class="keyword">if</span> ~isfield(covar, <span class="string">'c0'</span>) ,  covar.c0 = 1; <span class="keyword">end</span>
+<span class="keyword">if</span> ~isfield(covar, <span class="string">'range0'</span>) ,  covar.range0 = [nx/5 ny/5]; <span class="keyword">end</span>
+<span class="keyword">if</span> ~isfield(covar, <span class="string">'azimuth'</span>) ,  covar.azimuth = 0; <span class="keyword">end</span>
+<span class="keyword">if</span> ~isfield(covar, <span class="string">'alpha'</span>) ,  covar.alpha = 1; <span class="keyword">end</span>
+covar = kriginginitiaite(covar);
+
+<span class="comment">% Neighborhood search strategie</span>
+<span class="keyword">if</span> ~isfield(neigh, <span class="string">'method'</span>),  neigh.method = <span class="string">'sbss'</span>; <span class="keyword">end</span>
+<span class="keyword">if</span> ~isfield(neigh, <span class="string">'lookup'</span>),  neigh.lookup = false; <span class="keyword">end</span>
+<span class="keyword">if</span> ~isfield(neigh, <span class="string">'nb'</span>),  neigh.nb = 30; <span class="keyword">end</span>
+<span class="keyword">if</span> ~isfield(neigh, <span class="string">'wradius'</span>) neigh.wradius  = 3; <span class="keyword">end</span>
+
+<span class="comment">% Paramter settings</span>
+<span class="keyword">if</span> ~isfield(parm, <span class="string">'seed_path'</span>),     parm.seed_path      = <span class="string">'shuffle'</span>; <span class="keyword">end</span>
+<span class="keyword">if</span> ~isfield(parm, <span class="string">'seed_U'</span>),        parm.seed_U         = <span class="string">'shuffle'</span>; <span class="keyword">end</span>
+<span class="keyword">if</span> ~isfield(parm, <span class="string">'seed_search'</span>),   parm.seed_search         = <span class="string">'shuffle'</span>; <span class="keyword">end</span>
+<span class="keyword">if</span> ~isfield(parm, <span class="string">'saveit'</span>),        parm.saveit         = 0; <span class="keyword">end</span> <span class="comment">% bolean, save or not the result of simulation</span>
+<span class="keyword">if</span> ~isfield(parm, <span class="string">'name'</span>),          parm.name           = <span class="string">''</span>; <span class="keyword">end</span> <span class="comment">% name use for saving file</span>
+<span class="keyword">if</span> ~isfield(parm, <span class="string">'path'</span>),          parm.path            = <span class="string">'linear'</span>; <span class="keyword">end</span>
+<span class="keyword">if</span> ~isfield(parm, <span class="string">'path_random'</span>),   parm.path_random     = 1; <span class="keyword">end</span>
+<span class="keyword">if</span> ~isfield(parm, <span class="string">'mg'</span>),            parm.mg              = 1; <span class="keyword">end</span>
+</pre><pre class="codeoutput error">Not enough input arguments.
+
+Error in SGS (line 29)
+assert(floor(nx)==nx &amp;&amp; nx&gt;0,'nx must be a positive integer');
+</pre><h2 id="5">2. Use the requested method or find the optimal one</h2><pre class="codeinput"><span class="keyword">switch</span> method
+    <span class="keyword">case</span> <span class="string">'trad'</span>
+        [Rest, t] = SGS_trad(nx,ny,m,covar,neigh,parm);
+    <span class="keyword">case</span> <span class="string">'cst'</span>
+        [Rest, t] = SGS_cst(nx,ny,m,covar,neigh,parm);
+    <span class="keyword">case</span> <span class="string">'cst_par'</span>
+        [Rest, t] = SGS_cst_par(nx,ny,m,covar,neigh,parm);
+    <span class="keyword">case</span> <span class="string">'cst_par_cond'</span>
+        hd.x=hd.x(:); hd.y=hd.y(:); hd.d=hd.d(:);
+        <span class="keyword">if</span> ~isfield(hd, <span class="string">'n'</span>), hd.n= numel(hd.d); <span class="keyword">end</span>
+        <span class="keyword">if</span> ~isfield(hd, <span class="string">'id'</span>)
+            hd.id = sub2ind([ny nx],hd.y,hd.x);
+        <span class="keyword">else</span>
+            hd.id=hd.id(:);
+        <span class="keyword">end</span>
+        hd.scale=nan(hd.n,1);
+        [Rest, t] = SGS_cst_par_cond(nx,ny,m,covar,neigh,parm,hd);
+    <span class="keyword">case</span> <span class="string">'hybrid'</span>
+        <span class="keyword">if</span> ~isfield(parm, <span class="string">'hybrid'</span>), parm.hybrid=5;<span class="keyword">end</span>
+        [Rest, t] = SGS_hybrid(nx,ny,m,covar,neigh,parm);
+    <span class="keyword">case</span> <span class="string">'varcovar'</span>
+        Rest = SGS_varcovar(nx,ny,m,covar,neigh,parm);
+    <span class="keyword">otherwise</span>
+
+<span class="keyword">end</span>
+</pre><h2 id="6">3. Saving if requested</h2><pre class="codeinput"><span class="keyword">if</span> parm.saveit
+    filename=[<span class="string">'result-SGS/SIM-'</span>, parm.name ,<span class="string">'_'</span>, datestr(now,<span class="string">'yyyy-mm-dd_HH-MM-SS'</span>), <span class="string">'.mat'</span>];
+    mkdir(<span class="string">'result-SGS/'</span>)
+    save(filename, <span class="string">'parm'</span>,<span class="string">'nx'</span>,<span class="string">'ny'</span>, <span class="string">'Rest'</span>, <span class="string">'t'</span>, <span class="string">'k'</span>,<span class="string">'U'</span>)
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Sequential Gaussian Simulation
+% Traditional SGS produced Gaussian realization 
+%
+% *INPUT* 
+%
+% * nx,ny: number of cell in x and y [int]
+% * m: number of realization [int]
+% * covar: covariance function structure
+% * neigh: neighborhood search strategie
+% * parm: Other paramerter
+
+% 
+% *OUPUT*
+%
+% * Rest: Realizations matrix (nx,ny,m)
+% * t: time structure
+%%
+
+function [Rest, t] = SGS(nx,ny,m,covar,neigh,parm, method,hd)
+
+addpath('./functions/')
+ 
+%% 1. Checking and formating Input
+% This section of the code generates a valid parm structure based on the
+% inputted parm. If some parm value haven't been input, this section will
+% fill automatically with defautl value. This may not allowed be the best.
+
+% Grid size and realization number
+assert(floor(nx)==nx && nx>0,'nx must be a positive integer');
+assert(floor(ny)==ny && ny>0,'nx must be a positive integer');
+assert(floor(m)==m && m>0,'The number of realizations must be a positive integer');
+
+% Covariance structure. See |kriginginitiaite.m| for more information
+if ~isfield(covar, 'model') ,  covar.model = 'spherical'; end
+if ~isfield(covar, 'c0') ,  covar.c0 = 1; end
+if ~isfield(covar, 'range0') ,  covar.range0 = [nx/5 ny/5]; end
+if ~isfield(covar, 'azimuth') ,  covar.azimuth = 0; end
+if ~isfield(covar, 'alpha') ,  covar.alpha = 1; end
+covar = kriginginitiaite(covar);
+
+% Neighborhood search strategie
+if ~isfield(neigh, 'method'),  neigh.method = 'sbss'; end
+if ~isfield(neigh, 'lookup'),  neigh.lookup = false; end
+if ~isfield(neigh, 'nb'),  neigh.nb = 30; end
+if ~isfield(neigh, 'wradius') neigh.wradius  = 3; end
+
+% Paramter settings
+if ~isfield(parm, 'seed_path'),     parm.seed_path      = 'shuffle'; end
+if ~isfield(parm, 'seed_U'),        parm.seed_U         = 'shuffle'; end
+if ~isfield(parm, 'seed_search'),   parm.seed_search         = 'shuffle'; end
+if ~isfield(parm, 'saveit'),        parm.saveit         = 0; end % bolean, save or not the result of simulation
+if ~isfield(parm, 'name'),          parm.name           = ''; end % name use for saving file
+if ~isfield(parm, 'path'),          parm.path            = 'linear'; end
+if ~isfield(parm, 'path_random'),   parm.path_random     = 1; end
+if ~isfield(parm, 'mg'),            parm.mg              = 1; end
+
+
+%% 2. Use the requested method or find the optimal one
+
+switch method
+    case 'trad'
+        [Rest, t] = SGS_trad(nx,ny,m,covar,neigh,parm);
+    case 'cst'
+        [Rest, t] = SGS_cst(nx,ny,m,covar,neigh,parm);
+    case 'cst_par'
+        [Rest, t] = SGS_cst_par(nx,ny,m,covar,neigh,parm);
+    case 'cst_par_cond'
+        hd.x=hd.x(:); hd.y=hd.y(:); hd.d=hd.d(:);
+        if ~isfield(hd, 'n'), hd.n= numel(hd.d); end
+        if ~isfield(hd, 'id')
+            hd.id = sub2ind([ny nx],hd.y,hd.x);
+        else
+            hd.id=hd.id(:);
+        end
+        hd.scale=nan(hd.n,1);
+        [Rest, t] = SGS_cst_par_cond(nx,ny,m,covar,neigh,parm,hd);
+    case 'hybrid'
+        if ~isfield(parm, 'hybrid'), parm.hybrid=5;end
+        [Rest, t] = SGS_hybrid(nx,ny,m,covar,neigh,parm);
+    case 'varcovar'
+        Rest = SGS_varcovar(nx,ny,m,covar,neigh,parm);
+    otherwise
+        
+end
+
+
+%% 3. Saving if requested
+if parm.saveit
+    filename=['result-SGS/SIM-', parm.name ,'_', datestr(now,'yyyy-mm-dd_HH-MM-SS'), '.mat'];
+    mkdir('result-SGS/')
+    save(filename, 'parm','nx','ny', 'Rest', 't', 'k','U')
+end
+
+##### SOURCE END #####
+--></body></html>

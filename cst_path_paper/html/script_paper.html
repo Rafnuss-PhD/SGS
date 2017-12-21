@@ -1,0 +1,750 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Script to reproduce the paper</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-12-21"><meta name="DC.source" content="script_paper.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Script to reproduce the paper</h1><!--introduction--><p>Nussbaumer, Rapha&euml;l, Gr&eacute;goire Mariethoz, Mathieu Gravey, Erwan Gloaguen, and Klaus Holliger. 2017. &#8220;Accelerating Sequential Gaussian Simulation with a Constant Path.&#8221; Computers &amp; Geosciences. Retrieved DOI:&lt;http://linkinghub.elsevier.com/retrieve/pii/S0098300417304685 10.1016/j.cageo.2017.12.006&gt;.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">Figure 1</a></li><li><a href="#3">Figure 2,3,4</a></li><li><a href="#4">Figure 2</a></li><li><a href="#5">Figure 3</a></li><li><a href="#6">Figure 4</a></li><li><a href="#7">Figure 5</a></li><li><a href="#8">Figure 6</a></li></ul></div><pre class="codeinput">clc; addpath(<span class="string">'..'</span>); addpath(<span class="string">'../functions'</span>);
+</pre><h2 id="2">Figure 1</h2><p><img vspace="5" hspace="5" src="figure1.jpg" alt=""> </p><p>Speed-up as a function of the number of realizations performed for 3 differents grid sizes and neighbourhood sizes. The grid sizes were selected such that the multi-grid path is optimal and the neighbourhood size such that the resulting full neighbourhood is symmetric. The computational time for the first realization is also shown in the legend.</p><pre class="codeinput"><span class="comment">% General setting</span>
+covar.model = <span class="string">'spherical'</span>;
+covar.azimuth = 0;
+covar.c0 = 1;
+covar.alpha = 1;
+covar.range0 = [15 15];
+
+parm.seed_path = <span class="string">'default'</span>;
+parm.seed_search = <span class="string">'shuffle'</span>;
+parm.seed_U = <span class="string">'default'</span>;
+parm.saveit = 0;
+parm.mg = 1;
+
+neigh.wradius = 1;
+m = 1;
+
+<span class="comment">% Define the range of grid size and neighborhood size</span>
+N=2.^[8 10 12]+1;<span class="comment">%[257 1025 4097];</span>
+K=[20 52 108];
+
+T_trad_g=nan(numel(N),numel(K));
+T_cst_g=nan(numel(N),numel(K));
+T_cst_real=nan(numel(N),numel(K));
+T_trad_real =nan(numel(N),numel(K));
+
+<span class="keyword">for</span> i_n=1:numel(N)
+    <span class="keyword">for</span> i_k=1:numel(K)
+        nx = N(i_n); <span class="comment">% no multigrid</span>
+        ny = N(i_n);
+        neigh.nb = K(i_k);
+
+        [~,t] = SGS_cst(nx,ny,m,covar,neigh,parm);
+        title = [<span class="string">'T_cst_'</span> num2str(N(i_n)) <span class="string">'N_'</span> num2str(K(i_k)) <span class="string">'K'</span> ];
+        T_cst_g(i_n,i_k) = t.global;
+        T_cst_real(i_n,i_k) = t.real;
+
+        [~,t] = SGS_trad(nx,ny,parm);
+        title = [<span class="string">'T_trad_'</span> num2str(N(i_n)) <span class="string">'N_'</span> num2str(K(i_k)) <span class="string">'K'</span> ];
+        T_trad_g(i_n,i_k) = t.global;
+        T_trad_real(i_n,i_k) = t.real;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+figure(1); clf
+m=0:100;
+<span class="keyword">for</span> i_n=1:numel(N)
+    subplot(1,numel(N),i_n); hold <span class="string">on</span>
+    plot([0 100],[0 100],<span class="string">'--k'</span>)
+    <span class="keyword">for</span> i_k=1:numel(K)
+        eta = ( T_trad_g(i_n,i_k) + (m-1).*T_trad_real(i_n,i_k)) ./ ( T_cst_par_g(i_n,i_k) + (m-1).*T_cst_par_real(i_n,i_k));
+        h(i_k)=plot(m,eta);
+    <span class="keyword">end</span>
+    legend(h,{<span class="string">'20 Neighbors'</span>,<span class="string">'52 Neighbors'</span>,<span class="string">'108 Neighbors'</span>});
+    axis <span class="string">equal</span> <span class="string">tight</span>
+    xlabel(<span class="string">'Number of realizations'</span>)
+    ylabel(<span class="string">'Speed-up'</span>)
+<span class="keyword">end</span>
+</pre><pre class="codeoutput error">Reference to non-existent field 'range'.
+
+Error in SGS_cst (line 44)
+x = ceil( min(covar(1).range(2)*neigh.wradius, nx));
+
+Error in script_paper (line 50)
+        [~,t] = SGS_cst(nx,ny,m,covar,neigh,parm);
+</pre><h2 id="3">Figure 2,3,4</h2><pre class="codeinput"><span class="comment">% General setting</span>
+covar.range0 = [15 15];
+covar.azimuth = 0;
+covar.c0 = 1;
+covar.alpha = 1;
+
+parm.seed_path = <span class="string">'shuffle'</span>;
+parm.seed_search = <span class="string">'shuffle'</span>;
+parm.saveit = 0;
+parm.mg = 1;
+
+neigh.wradius = 1;
+neigh.nb = 20;
+
+m = 1;
+nx = 2^6+1;
+ny = 2^6+1;
+
+<span class="comment">% Defines the type of variogram tested</span>
+vario = {<span class="string">'exponential'</span>, <span class="string">'gaussian'</span>, <span class="string">'spherical'</span>, <span class="string">'hyperbolic'</span>,<span class="string">'k-bessel'</span>, <span class="string">'cardinal sine'</span>};
+
+<span class="comment">% Compute the true covariance fo each covariance model</span>
+[Y, X] = ndgrid(1:nx,1:ny); XY = [Y(:) X(:)];
+<span class="keyword">for</span> v=1:numel(vario)
+    covar.model = vario{v};
+    covar = kriginginitiaite(covar);
+    DIST = squareform(pdist(XY*covar.cx));
+    CY_true{v} = kron(covar.g(DIST), covar.c0);
+<span class="keyword">end</span>
+err_frob_fx = @(CY,v) sqrt(sum((CY(:)-CY_true{v}(:)).^2)) / sum((CY_true{v}(:).^2));
+
+
+<span class="comment">% Simulation</span>
+N = 10;
+vario_g=cell(numel(vario),1);
+D = pdist2(XY,XY);
+h = unique(D);
+h = h(h&lt;=parm.k.covar.range0(1)*1.5);
+
+<span class="keyword">parfor</span> v=1:numel(vario)
+    parm1=parm;
+    parm1.gen.covar.model = vario{v};
+    CY=repmat({nan(ny*nx,nx*ny,2)},N,1);
+    eta{v}=cell(N,1);
+    nn=cell(N,1);
+    <span class="keyword">for</span> n=1:(2^(N-1))
+        vec = de2bi(n-1,N);
+        CY{1}(:,:,vec(1)+1) = full(SGS_varcovar(nx,ny,parm1));
+        eta{v}{1} = [eta{v}{1}; err_frob_fx(CY{1}(:,:,vec(1)+1),v)];
+        nn{1} = [nn{1}; 2^(1-1)];
+        i=1;
+        <span class="keyword">while</span> (vec(i)==1)
+            CY{i+1}(:,:,vec(i+1)+1) = mean(CY{i},3);
+            eta{v}{i+1} = [eta{v}{i+1}; err_frob_fx(CY{i+1}(:,:,vec(i+1)+1),v)];
+            nn{i+1} = [nn{i+1}; 2^(i)];
+            i=i+1;
+        <span class="keyword">end</span>
+        disp([<span class="string">'N: '</span> num2str(n) ])
+    <span class="keyword">end</span>
+
+    vario_g{v} = nan(N,numel(h));
+    <span class="keyword">for</span> n=1:N
+        <span class="keyword">for</span> i=1:numel(h)
+            id = D ==h(i);
+            id2 = CY{n}(id);
+            vario_g{v}(n,i) = sum(id2)/sum(id(:));
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment">% Save result</span>
+<span class="comment">%save(['./cst_path_paper/frobenium_65n_20k_512N_1MG'],'eta','vario','vario_g','n','parm','nx','ny');</span>
+</pre><h2 id="4">Figure 2</h2><p><img vspace="5" hspace="5" src="figure2.jpg" alt=""> </p><p>Boxplots of the SFN of simulated RFs <img src="script_paper_eq01224123281941154006.png" alt="$Z_P$"> for different numbers of simulation paths <img src="script_paper_eq03020482525250855240.png" alt="$n_P = 1,...,128$"> . 512 simulated RFs <img src="script_paper_eq10840370523871895616.png" alt="$Z_{p_i}$"> were computed and different numbers of them combined to construct the simulated RFs with a fully randomized path <img src="script_paper_eq01224123281941154006.png" alt="$Z_P$"> according to equation 20.</p><pre class="codeinput">figure(2);clf; hold <span class="string">on</span>;
+lim=8;
+load(<span class="string">'Y:/SGS/cst_path_paper/frobenium_65n_20k_512N_1MG'</span>);
+<span class="keyword">for</span> v=1:numel(vario)
+    subplot(numel(vario)/2,2,v); hold <span class="string">on</span>;
+    boxplot(cell2mat(eta{v}(1:lim)),cell2mat(nn(1:lim)),<span class="string">'Orientation'</span>,<span class="string">'horizontal'</span>,<span class="string">'Color'</span>,[0 113 188]/255);
+    axis <span class="string">tight</span>;
+    xlabel([<span class="string">'Number of Path\newline'</span> vario{v} <span class="string">' variogram'</span>]);
+    ylabel([<span class="string">'Standardized Frobenius Norm Error'</span>])
+<span class="keyword">end</span>
+</pre><h2 id="5">Figure 3</h2><p><img vspace="5" hspace="5" src="figure3.jpg" alt=""> </p><p>Boxplot of the SFN for several simulated RFs for different numbers of simulation paths and different neighbourhood sizes for a spherical covariance function.</p><pre class="codeinput">figure(3); clf; hold <span class="string">on</span>;
+lim=8;
+filename2={<span class="string">'frobenium_sph_8_512'</span>, <span class="string">'frobenium_sph_20_512'</span> ,<span class="string">'frobenium_sph_52_512'</span>};
+col={<span class="string">'b'</span>,<span class="string">'r'</span>,<span class="string">'g'</span>,<span class="string">'y'</span>};
+<span class="keyword">for</span> i=1:numel(filename2)
+    s=load([<span class="string">'result-SGSIM/Constant Path/'</span> filename2{i}]);
+    xlim_b=get(gca,<span class="string">'xlim'</span>);
+    boxplot(cell2mat(s.eta(1:lim)),cell2mat(nn(1:lim)),<span class="string">'Orientation'</span>,<span class="string">'horizontal'</span>,<span class="string">'color'</span>,col{i},<span class="string">'symbol'</span>,[<span class="string">'+'</span> col{i}]);
+    xlim_a=get(gca,<span class="string">'xlim'</span>);
+    <span class="keyword">if</span> i&gt;1
+        xlim([ min(xlim_b(1), xlim_a(1)) max(xlim_b(2), xlim_a(2))])
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+hLegend = legend(findall(gca,<span class="string">'Tag'</span>,<span class="string">'Box'</span>), {<span class="string">'Neighboors: 8'</span>, <span class="string">'Neighboors: 20'</span>, <span class="string">'Neighboors: 52'</span>});
+ylabel(<span class="string">'Number of Path'</span>);
+xlabel(<span class="string">'Standardized Frobenius Norm Error'</span>)
+</pre><h2 id="6">Figure 4</h2><p><img vspace="5" hspace="5" src="figure4.jpg" alt=""> </p><p>Boxplot of the SFN for several simulated RFs using different numbers of simulation paths for multi-grid or random simulation paths.</p><pre class="codeinput">figure(4);clf;
+lim=8;
+filename2={<span class="string">'frobenium_65n_20k_512N_0MG'</span> ,<span class="string">'frobenium_65n_20k_512N_1MG'</span>};
+col={<span class="string">'b'</span>,<span class="string">'r'</span>,<span class="string">'g'</span>,<span class="string">'y'</span>};
+<span class="keyword">for</span> v=1:numel(vario)
+    subplot(numel(vario)/2,2,v); hold <span class="string">on</span>;
+    <span class="keyword">for</span> i=1:numel(filename2)
+        s=load([<span class="string">'Y:/SGS/cst_path_paper/'</span> filename2{i}]);
+        xlim_b=get(gca,<span class="string">'xlim'</span>);
+        boxplot(cell2mat(s.eta{v}(1:lim)),cell2mat(nn(1:lim)),<span class="string">'Orientation'</span>,<span class="string">'horizontal'</span>,<span class="string">'color'</span>,col{i},<span class="string">'symbol'</span>,[<span class="string">'+'</span> col{i}]);
+        xlim_a=get(gca,<span class="string">'xlim'</span>);
+        <span class="keyword">if</span> i&gt;1
+            xlim([ min(xlim_b(1), xlim_a(1)) max(xlim_b(2), xlim_a(2))])
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    hLegend = legend(findall(gca,<span class="string">'Tag'</span>,<span class="string">'Box'</span>), {<span class="string">'Random Path'</span>, <span class="string">'Mutli-grid Path'</span>});
+    ylabel(<span class="string">'Number of Path'</span>);
+    xlabel(<span class="string">'Standardized Frobenius Norm Error'</span>)
+<span class="keyword">end</span>
+</pre><h2 id="7">Figure 5</h2><p><img vspace="5" hspace="5" src="figure5.jpg" alt=""> </p><p>(Left) Mean and standard deviation of the SFN using up to 16 different randomized multi-grid paths for simulations where the constant path approach is switched on at different grid level. Note that the curves for levels 1-4 and for the fully constant path are superimposed. (Right) Corresponding simulation speed-up of simulation.</p><pre class="codeinput"><span class="comment">% General setting</span>
+covar.model = <span class="string">'gaussian'</span>;
+covar.range0 = [15 15];
+covar.azimuth = 0;
+covar.c0 = 1;
+covar.alpha = 1;
+
+parm.seed_path = <span class="string">'shuffle'</span>;
+parm.seed_search = <span class="string">'shuffle'</span>;
+parm.saveit = 0;
+parm.mg = 1;
+
+neigh.wradius = 1;
+neigh.nb = 20;
+
+m = 1;
+nx = 2^7+1;
+ny = 2^7+1;
+
+<span class="comment">% Build true covariance matrice</span>
+[Y, X]=ndgrid(1:nx,1:ny); XY = [Y(:) X(:)];
+covar = kriginginitiaite(parm.k.covar);
+DIST = squareform(pdist(XY*covar.cx));
+CY_true = kron(covar.g(DIST), covar.c0);
+err_frob_fx = @(CY) sqrt(sum((CY(:)-CY_true(:)).^2)) / sum((CY_true(:).^2));
+
+N=2;
+CY=repmat({nan(ny*nx,nx*ny,2)},N,1);
+eta=cell(N,1);
+nn=cell(N,1);
+<span class="keyword">for</span> n=1:(2^(N-1))
+    vec = de2bi(n-1,N);
+    CY{1}(:,:,vec(1)+1) = full(SGS_varcovar(nx,ny,parm));
+    eta{1} = [eta{1}; err_frob_fx(CY{1}(:,:,vec(1)+1))];
+    nn{1} = [nn{1}; 2^(1-1)];
+    i=1;
+    <span class="keyword">while</span> (vec(i)==1)
+        CY{i+1}(:,:,vec(i+1)+1) = mean(CY{i},3);
+        eta{i+1} = [eta{i+1}; err_frob_fx(CY{i+1}(:,:,vec(i+1)+1))];
+        nn{i+1} = [nn{i+1}; 2^(i)];
+        i=i+1;
+    <span class="keyword">end</span>
+    disp([<span class="string">'N: '</span> num2str(n) ])
+<span class="keyword">end</span>
+
+sx = 1:ceil(log(nx+1)/log(2));   sy = 1:ceil(log(ny+1)/log(2));   sn = max([numel(sy), numel(sx)]);
+nb = nan(sn,1);start = zeros(sn+1,1);   path = nan(nx*ny,1); Path = nan(ny,nx);
+<span class="keyword">for</span> i_scale = 1:sn
+   dx(i_scale) = 2^(sn-sx(min(i_scale,end))); dy = 2^(sn-sy(min(i_scale,end)));
+   [Y_s,X_s] = ndgrid(1:dy:ny,1:dx(i_scale):nx); <span class="comment">% matrix coordinate</span>
+   id = find(isnan(Path(:)) &amp; ismember(XY, [Y_s(:) X_s(:)], <span class="string">'rows'</span>));
+   nb(i_scale) = numel(id); start(i_scale+1) = start(i_scale)+nb(i_scale);
+   path( start(i_scale)+(1:nb(i_scale)) ) = id(randperm(nb(i_scale)));
+   Path(path( start(i_scale)+(1:nb(i_scale)) )) = start(i_scale)+(1:nb(i_scale));
+<span class="keyword">end</span>
+
+<span class="comment">% save(['./cst_path_paper/frobenium_129n_20k_16N_MG_' num2str(parm.seed_path) 'CSTP'],'eta','nn','parm','nx','ny','nb');</span>
+
+
+
+<span class="comment">% Figure</span>
+figure(10);clf; hold <span class="string">on</span>;
+CST=1:9; cnb = cumsum(nb); ldgd=cell(numel(CST),1);
+<span class="keyword">for</span> i = 1:numel(CST)
+    load([<span class="string">'Y:/SGS/cst_path_paper/frobenium_129n_20k_16N_MG_'</span> num2str(CST(i)) <span class="string">'CSTP'</span>])
+    <span class="comment">%boxplot(cell2mat(eta),cell2mat(nn),'Orientation','horizontal','Color',[0 113 188]/255);</span>
+    M = cellfun(@median,eta);
+    S = cellfun(@std,eta);
+    n = flipud(cellfun(@numel,eta));
+    errorbar(n,M,S)
+    ldgd{i} = [<span class="string">'Level '</span> num2str(CST(i)-1) <span class="string">' ('</span> num2str(cnb(CST(i)-1)) <span class="string">' nodes | '</span> num2str(cnb(CST(i)-1)./cnb(end)*100,<span class="string">'%4.2f'</span>) <span class="string">'% | \Deltax='</span> num2str(dx(CST(i)-1)) <span class="string">')'</span> ];
+<span class="keyword">end</span>
+view(90,-90); box <span class="string">on</span>
+xlabel(<span class="string">'Number of Path'</span>);
+ylabel(<span class="string">'Standardized Frobenius Norm Error'</span>)
+title(<span class="string">'Constant path from level x with Multi-grid'</span>);
+
+legend(ldgd)
+
+
+<span class="comment">% General setting</span>
+parm.k.covar.model = <span class="string">'spherical'</span>;
+parm.k.covar.azimuth = 0;
+parm.k.covar.c0 = 1;
+parm.k.covar.alpha = 1;
+parm.seed_search = <span class="string">'shuffle'</span>;
+parm.k.covar.range0 = [15 15];
+parm.k.wradius = 3;
+parm.mg = 1;
+nx = 2^7+1; <span class="comment">% no multigrid</span>
+ny = 2^7+1;
+parm.k.nb = 20;
+
+seed_path=1:9;
+
+nt=2;
+t_real=nan(nt,numel(seed_path));
+t_global=nan(nt,numel(seed_path));
+<span class="keyword">for</span> j=1:numel(seed_path)
+    parm.seed_path = seed_path(j);
+    <span class="keyword">for</span> i=1:nt
+        profile <span class="string">on</span>
+        [~,t] = SGS_hybrid(ny,nx,parm);
+        profile <span class="string">viewer</span>
+        t_global(i,j)=t.global-t.covtable;
+        t_real(i,j)=t.real;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+
+clear <span class="string">eta</span>;
+m=1:10;
+<span class="keyword">for</span> i_m=m
+    eta(i_m,:) = i_m.*mean(t_global) ./ ( mean(t_global) + (i_m-1).*mean(t_real));
+<span class="keyword">end</span>
+
+figure(5); clf; hold <span class="string">on</span>;
+plot(eta)
+plot([0 10], [0 10], <span class="string">'--k'</span>)
+legend(ldgd);
+axis <span class="string">tight</span> <span class="string">equal</span>
+xlabel(<span class="string">'Number of realizations'</span>)
+ylabel(<span class="string">'Speed-up'</span>)
+</pre><h2 id="8">Figure 6</h2><p><img vspace="5" hspace="5" src="figure6.jpg" alt=""> </p><p>Older version of the code not maintained...</p><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Script to reproduce the paper
+% Nussbaumer, Raphaël, Grégoire Mariethoz, Mathieu Gravey, Erwan Gloaguen, and Klaus Holliger. 2017. “Accelerating Sequential Gaussian Simulation with a Constant Path.” Computers & Geosciences. Retrieved DOI:<http://linkinghub.elsevier.com/retrieve/pii/S0098300417304685 10.1016/j.cageo.2017.12.006>.
+% 
+%%
+
+clc; addpath('..'); addpath('../functions');
+
+%% Figure 1
+%
+% <<figure1.jpg>>
+% 
+% Speed-up as a function of the number of realizations performed for 3 
+% differents grid sizes and neighbourhood sizes. The grid sizes were 
+% selected such that the multi-grid path is optimal and the neighbourhood
+% size such that the resulting full neighbourhood is symmetric. The 
+% computational time for the first realization is also shown in the legend.
+
+
+% General setting
+covar.model = 'spherical';
+covar.azimuth = 0;
+covar.c0 = 1;
+covar.alpha = 1;
+covar.range0 = [15 15];
+
+parm.seed_path = 'default';
+parm.seed_search = 'shuffle';
+parm.seed_U = 'default';
+parm.saveit = 0;
+parm.mg = 1;
+
+neigh.wradius = 1;
+m = 1;
+
+% Define the range of grid size and neighborhood size
+N=2.^[8 10 12]+1;%[257 1025 4097];
+K=[20 52 108];
+
+T_trad_g=nan(numel(N),numel(K));
+T_cst_g=nan(numel(N),numel(K));
+T_cst_real=nan(numel(N),numel(K));
+T_trad_real =nan(numel(N),numel(K));
+
+for i_n=1:numel(N)
+    for i_k=1:numel(K)
+        nx = N(i_n); % no multigrid
+        ny = N(i_n);
+        neigh.nb = K(i_k);
+        
+        [~,t] = SGS_cst(nx,ny,m,covar,neigh,parm);
+        title = ['T_cst_' num2str(N(i_n)) 'N_' num2str(K(i_k)) 'K' ];
+        T_cst_g(i_n,i_k) = t.global;
+        T_cst_real(i_n,i_k) = t.real;
+        
+        [~,t] = SGS_trad(nx,ny,parm);
+        title = ['T_trad_' num2str(N(i_n)) 'N_' num2str(K(i_k)) 'K' ];
+        T_trad_g(i_n,i_k) = t.global;
+        T_trad_real(i_n,i_k) = t.real;
+    end
+end
+
+figure(1); clf
+m=0:100;
+for i_n=1:numel(N)
+    subplot(1,numel(N),i_n); hold on
+    plot([0 100],[0 100],'REPLACE_WITH_DASH_DASHk')
+    for i_k=1:numel(K)
+        eta = ( T_trad_g(i_n,i_k) + (m-1).*T_trad_real(i_n,i_k)) ./ ( T_cst_par_g(i_n,i_k) + (m-1).*T_cst_par_real(i_n,i_k));
+        h(i_k)=plot(m,eta);
+    end
+    legend(h,{'20 Neighbors','52 Neighbors','108 Neighbors'}); 
+    axis equal tight
+    xlabel('Number of realizations')
+    ylabel('Speed-up')
+end
+
+
+
+
+%% Figure 2,3,4
+
+% General setting
+covar.range0 = [15 15];
+covar.azimuth = 0;
+covar.c0 = 1;
+covar.alpha = 1;
+
+parm.seed_path = 'shuffle';
+parm.seed_search = 'shuffle';
+parm.saveit = 0;
+parm.mg = 1;
+
+neigh.wradius = 1;
+neigh.nb = 20;
+
+m = 1;
+nx = 2^6+1;
+ny = 2^6+1;
+
+% Defines the type of variogram tested
+vario = {'exponential', 'gaussian', 'spherical', 'hyperbolic','k-bessel', 'cardinal sine'};
+
+% Compute the true covariance fo each covariance model
+[Y, X] = ndgrid(1:nx,1:ny); XY = [Y(:) X(:)];
+for v=1:numel(vario)
+    covar.model = vario{v};
+    covar = kriginginitiaite(covar);
+    DIST = squareform(pdist(XY*covar.cx));
+    CY_true{v} = kron(covar.g(DIST), covar.c0);
+end
+err_frob_fx = @(CY,v) sqrt(sum((CY(:)-CY_true{v}(:)).^2)) / sum((CY_true{v}(:).^2));
+
+
+% Simulation
+N = 10;
+vario_g=cell(numel(vario),1);
+D = pdist2(XY,XY);
+h = unique(D);
+h = h(h<=parm.k.covar.range0(1)*1.5);
+
+parfor v=1:numel(vario)
+    parm1=parm;
+    parm1.gen.covar.model = vario{v};
+    CY=repmat({nan(ny*nx,nx*ny,2)},N,1);
+    eta{v}=cell(N,1);
+    nn=cell(N,1);
+    for n=1:(2^(N-1))
+        vec = de2bi(n-1,N);
+        CY{1}(:,:,vec(1)+1) = full(SGS_varcovar(nx,ny,parm1));
+        eta{v}{1} = [eta{v}{1}; err_frob_fx(CY{1}(:,:,vec(1)+1),v)];
+        nn{1} = [nn{1}; 2^(1-1)];
+        i=1;
+        while (vec(i)==1)
+            CY{i+1}(:,:,vec(i+1)+1) = mean(CY{i},3);
+            eta{v}{i+1} = [eta{v}{i+1}; err_frob_fx(CY{i+1}(:,:,vec(i+1)+1),v)];
+            nn{i+1} = [nn{i+1}; 2^(i)];
+            i=i+1;
+        end
+        disp(['N: ' num2str(n) ])
+    end
+    
+    vario_g{v} = nan(N,numel(h));
+    for n=1:N
+        for i=1:numel(h)
+            id = D ==h(i);
+            id2 = CY{n}(id);
+            vario_g{v}(n,i) = sum(id2)/sum(id(:));
+        end
+    end
+end
+
+% Save result
+%save(['./cst_path_paper/frobenium_65n_20k_512N_1MG'],'eta','vario','vario_g','n','parm','nx','ny');
+
+
+%% Figure 2
+%
+% <<figure2.jpg>>
+% 
+% Boxplots of the SFN of simulated RFs $Z_P$ for different numbers of  
+% simulation paths $n_P = 1,...,128$ . 512 simulated RFs $Z_{p_i}$ were computed 
+% and different numbers of them combined to construct the simulated RFs 
+% with a fully randomized path $Z_P$ according to equation 20.
+
+figure(2);clf; hold on;
+lim=8;
+load('Y:/SGS/cst_path_paper/frobenium_65n_20k_512N_1MG');
+for v=1:numel(vario)
+    subplot(numel(vario)/2,2,v); hold on;
+    boxplot(cell2mat(eta{v}(1:lim)),cell2mat(nn(1:lim)),'Orientation','horizontal','Color',[0 113 188]/255);
+    axis tight;
+    xlabel(['Number of Path\newline' vario{v} ' variogram']);
+    ylabel(['Standardized Frobenius Norm Error'])
+end
+
+
+%% Figure 3
+%
+% <<figure3.jpg>>
+% 
+% Boxplot of the SFN for several simulated RFs for different numbers of 
+% simulation paths and different neighbourhood sizes for a spherical 
+% covariance function.
+
+
+figure(3); clf; hold on;
+lim=8;
+filename2={'frobenium_sph_8_512', 'frobenium_sph_20_512' ,'frobenium_sph_52_512'};
+col={'b','r','g','y'};
+for i=1:numel(filename2)
+    s=load(['result-SGSIM/Constant Path/' filename2{i}]);
+    xlim_b=get(gca,'xlim');
+    boxplot(cell2mat(s.eta(1:lim)),cell2mat(nn(1:lim)),'Orientation','horizontal','color',col{i},'symbol',['+' col{i}]);
+    xlim_a=get(gca,'xlim');
+    if i>1
+        xlim([ min(xlim_b(1), xlim_a(1)) max(xlim_b(2), xlim_a(2))])
+    end
+end
+hLegend = legend(findall(gca,'Tag','Box'), {'Neighboors: 8', 'Neighboors: 20', 'Neighboors: 52'});
+ylabel('Number of Path');
+xlabel('Standardized Frobenius Norm Error')
+
+
+%% Figure 4
+%
+% <<figure4.jpg>>
+% 
+% Boxplot of the SFN for several simulated RFs using different numbers of 
+% simulation paths for multi-grid or random simulation paths.
+
+figure(4);clf;
+lim=8;
+filename2={'frobenium_65n_20k_512N_0MG' ,'frobenium_65n_20k_512N_1MG'};
+col={'b','r','g','y'};
+for v=1:numel(vario)
+    subplot(numel(vario)/2,2,v); hold on;
+    for i=1:numel(filename2)
+        s=load(['Y:/SGS/cst_path_paper/' filename2{i}]);
+        xlim_b=get(gca,'xlim');
+        boxplot(cell2mat(s.eta{v}(1:lim)),cell2mat(nn(1:lim)),'Orientation','horizontal','color',col{i},'symbol',['+' col{i}]);
+        xlim_a=get(gca,'xlim');
+        if i>1
+            xlim([ min(xlim_b(1), xlim_a(1)) max(xlim_b(2), xlim_a(2))])
+        end
+    end
+    hLegend = legend(findall(gca,'Tag','Box'), {'Random Path', 'Mutli-grid Path'});
+    ylabel('Number of Path');
+    xlabel('Standardized Frobenius Norm Error')
+end
+
+
+
+
+%% Figure 5
+%
+% <<figure5.jpg>>
+% 
+% (Left) Mean and standard deviation of the SFN using up to 16 different 
+% randomized multi-grid paths for simulations where the constant path 
+% approach is switched on at different grid level. Note that the curves 
+% for levels 1-4 and for the fully constant path are superimposed. 
+% (Right) Corresponding simulation speed-up of simulation.
+
+
+% General setting
+covar.model = 'gaussian';
+covar.range0 = [15 15];
+covar.azimuth = 0;
+covar.c0 = 1;
+covar.alpha = 1;
+
+parm.seed_path = 'shuffle';
+parm.seed_search = 'shuffle';
+parm.saveit = 0;
+parm.mg = 1;
+
+neigh.wradius = 1;
+neigh.nb = 20;
+
+m = 1;
+nx = 2^7+1;
+ny = 2^7+1;
+
+% Build true covariance matrice
+[Y, X]=ndgrid(1:nx,1:ny); XY = [Y(:) X(:)];
+covar = kriginginitiaite(parm.k.covar);
+DIST = squareform(pdist(XY*covar.cx));
+CY_true = kron(covar.g(DIST), covar.c0);
+err_frob_fx = @(CY) sqrt(sum((CY(:)-CY_true(:)).^2)) / sum((CY_true(:).^2));
+
+N=2;
+CY=repmat({nan(ny*nx,nx*ny,2)},N,1);
+eta=cell(N,1);
+nn=cell(N,1);
+for n=1:(2^(N-1))
+    vec = de2bi(n-1,N);
+    CY{1}(:,:,vec(1)+1) = full(SGS_varcovar(nx,ny,parm));
+    eta{1} = [eta{1}; err_frob_fx(CY{1}(:,:,vec(1)+1))];
+    nn{1} = [nn{1}; 2^(1-1)];
+    i=1;
+    while (vec(i)==1)
+        CY{i+1}(:,:,vec(i+1)+1) = mean(CY{i},3);
+        eta{i+1} = [eta{i+1}; err_frob_fx(CY{i+1}(:,:,vec(i+1)+1))];
+        nn{i+1} = [nn{i+1}; 2^(i)];
+        i=i+1;
+    end
+    disp(['N: ' num2str(n) ])
+end
+
+sx = 1:ceil(log(nx+1)/log(2));   sy = 1:ceil(log(ny+1)/log(2));   sn = max([numel(sy), numel(sx)]);
+nb = nan(sn,1);start = zeros(sn+1,1);   path = nan(nx*ny,1); Path = nan(ny,nx);
+for i_scale = 1:sn
+   dx(i_scale) = 2^(sn-sx(min(i_scale,end))); dy = 2^(sn-sy(min(i_scale,end)));
+   [Y_s,X_s] = ndgrid(1:dy:ny,1:dx(i_scale):nx); % matrix coordinate
+   id = find(isnan(Path(:)) & ismember(XY, [Y_s(:) X_s(:)], 'rows'));
+   nb(i_scale) = numel(id); start(i_scale+1) = start(i_scale)+nb(i_scale);
+   path( start(i_scale)+(1:nb(i_scale)) ) = id(randperm(nb(i_scale)));
+   Path(path( start(i_scale)+(1:nb(i_scale)) )) = start(i_scale)+(1:nb(i_scale));
+end
+
+% save(['./cst_path_paper/frobenium_129n_20k_16N_MG_' num2str(parm.seed_path) 'CSTP'],'eta','nn','parm','nx','ny','nb');
+
+
+
+% Figure
+figure(10);clf; hold on; 
+CST=1:9; cnb = cumsum(nb); ldgd=cell(numel(CST),1);
+for i = 1:numel(CST)
+    load(['Y:/SGS/cst_path_paper/frobenium_129n_20k_16N_MG_' num2str(CST(i)) 'CSTP'])
+    %boxplot(cell2mat(eta),cell2mat(nn),'Orientation','horizontal','Color',[0 113 188]/255);
+    M = cellfun(@median,eta);
+    S = cellfun(@std,eta);
+    n = flipud(cellfun(@numel,eta));
+    errorbar(n,M,S)
+    ldgd{i} = ['Level ' num2str(CST(i)-1) ' (' num2str(cnb(CST(i)-1)) ' nodes | ' num2str(cnb(CST(i)-1)./cnb(end)*100,'%4.2f') '% | \Deltax=' num2str(dx(CST(i)-1)) ')' ];
+end
+view(90,-90); box on
+xlabel('Number of Path');
+ylabel('Standardized Frobenius Norm Error')
+title('Constant path from level x with Multi-grid');
+
+legend(ldgd)
+
+
+% General setting
+parm.k.covar.model = 'spherical';
+parm.k.covar.azimuth = 0;
+parm.k.covar.c0 = 1;
+parm.k.covar.alpha = 1;
+parm.seed_search = 'shuffle';
+parm.k.covar.range0 = [15 15];
+parm.k.wradius = 3;
+parm.mg = 1;
+nx = 2^7+1; % no multigrid
+ny = 2^7+1;
+parm.k.nb = 20;
+
+seed_path=1:9;
+
+nt=2;
+t_real=nan(nt,numel(seed_path));
+t_global=nan(nt,numel(seed_path));
+for j=1:numel(seed_path)
+    parm.seed_path = seed_path(j);
+    for i=1:nt
+        profile on
+        [~,t] = SGS_hybrid(ny,nx,parm);
+        profile viewer
+        t_global(i,j)=t.global-t.covtable;
+        t_real(i,j)=t.real;
+    end
+end
+
+
+clear eta;
+m=1:10;
+for i_m=m
+    eta(i_m,:) = i_m.*mean(t_global) ./ ( mean(t_global) + (i_m-1).*mean(t_real));
+end
+
+figure(5); clf; hold on;
+plot(eta)
+plot([0 10], [0 10], 'REPLACE_WITH_DASH_DASHk')
+legend(ldgd); 
+axis tight equal
+xlabel('Number of realizations')
+ylabel('Speed-up')
+
+%% Figure 6
+%
+% <<figure6.jpg>>
+% 
+% Older version of the code not maintained... 
+##### SOURCE END #####
+--></body></html>

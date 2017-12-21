@@ -6,11 +6,8 @@
 % * nx,ny: number of cell in x and y [int]
 % * m: number of realization [int]
 % * covar: covariance function structure
-%       * 
 % * neigh: neighborhood search strategie
-%       * 
 % * parm: Other paramerter
-%       * 
 
 % 
 % *OUPUT*

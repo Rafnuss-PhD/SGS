@@ -3,7 +3,6 @@
 % Simulation. 
 % SGS with a constant path uses a unique path for each realization, thus, it's code
 % loop around the realization and the node after. See pseudo-code below
-% <<fx1.jpg>>
 % 
 %%
 
