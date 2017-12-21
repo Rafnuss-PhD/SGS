@@ -5,7 +5,7 @@ Have you ever wanted to generate a Gaussian field? This MATLAB script let you to
 
 
 ## Where to start?
-The [LiveScript ``script_SGS.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/script_SGS) gives a nice overview of the different implementation of SGS available in this code. 
+The LiveScript [``script_SGS.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/script_SGS) gives a nice overview of the different implementation of SGS available in this code. 
 
 Code is structure as follows. [``SGS.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/SGS) is the main function, it explains the input and outpur format, it also check the input argument and redirect toward the appropriate implementation of SGS, as listed below:
 
@@ -37,7 +37,8 @@ Nussbaumer, Raphaël, Grégoire Mariethoz, Erwan Gloaguen, and Klaus Holliger. 2
 
 
 ## SGS with a Constant Path
-In this second paper, I looked at the quite oftenly used technique which consist of using the same simulationp path among multiple realizations in order to be able to reuse the same kriging weights for all of them. In this work we wanted to quantify the amount of bias added with this technique, and provide some recommendation on the implementation. We showed that these biases were quite unsignificant compared to the computational gain obtained. 
+In this second paper, I looked at a quite oftenly used technique which consist of using the same simulation path among multiple realizations. This is done in order to be able to reuse the same kriging weights for all realization, which in turn allows a quite drastic reduction of the computational cost. In this work we wanted to quantify the amount of bias added with this technique, and provide some recommendation on the implementation. We showed that these biases were quite unsignificant compared to the computational gain obtained. Have a look a the paper below for more detail.
+The script [``cst_path_paper/script_paper.m``](https://raphael-nussbaumer-phd.github.io/SGS/cst_path_paper/html/script_paper) shows you how the figure were built.
 
 Nussbaumer, Raphaël, Grégoire Mariethoz, Mathieu Gravey, Erwan Gloaguen, and Klaus Holliger. 2017. “Accelerating Sequential Gaussian Simulation with a Constant Path.” Computers & Geosciences. Retrieved DOI:[10.1016/j.cageo.2017.12.006](http://linkinghub.elsevier.com/retrieve/pii/S0098300417304685).
 
