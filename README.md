@@ -1,4 +1,5 @@
 # Sequential Gaussian Simulation
+[![DOI](https://zenodo.org/badge/99672776.svg)](https://zenodo.org/badge/latestdoi/99672776)
 
 Have you ever wanted to generate a Gaussian field? This MATLAB script let you to easily create multiple conditional or unconditional 2D realizations of a Gaussian model of your choice.
 
