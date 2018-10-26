@@ -6,17 +6,17 @@ Have you ever wanted to generate a Gaussian field? This MATLAB script let you to
 
 
 ## Where to start?
-The LiveScript [``script_SGS.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/script_SGS) gives a nice overview of the different implementation of SGS available in this code. 
+The LiveScript [``script_SGS.m``](https://Rafnuss-phd.github.io/SGS/html/script_SGS) gives a nice overview of the different implementation of SGS available in this code. 
 
-Code is structure as follows. [``SGS.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/SGS) is the main function, it explains the input and outpur format, it also check the input argument and redirect toward the appropriate implementation of SGS, as listed below:
+Code is structure as follows. [``SGS.m``](https://Rafnuss-phd.github.io/SGS/html/SGS) is the main function, it explains the input and outpur format, it also check the input argument and redirect toward the appropriate implementation of SGS, as listed below:
 
 This package provides different implementation of Sequential Gaussian Simulation, each tailored for another usage.
-- [``SGS_trad.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/SGS_trad): the traditional alogrithm.
-- [``SGS_cst.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/SGS_cst): the constant path algorithm.
-- [``SGS_cst_par.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/SGS_cst_par): the constant path algorithm with parralelisation. 
-- [``SGS_cst_par_cond.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/SGS_cst_par_cond): the constant path algorithm with conditional point.
-- [``SGS_hybrid.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/SGS_hybrid): Hydrid constant/randomized path switching at a certain level of the Multi-grid path.
-- [``SGS_varcovar.m``](https://raphael-nussbaumer-phd.github.io/SGS/html/SGS_varcovar): Compute the full covariance matrice of the simulation.
+- [``SGS_trad.m``](https://Rafnuss-phd.github.io/SGS/html/SGS_trad): the traditional alogrithm.
+- [``SGS_cst.m``](https://Rafnuss-phd.github.io/SGS/html/SGS_cst): the constant path algorithm.
+- [``SGS_cst_par.m``](https://Rafnuss-phd.github.io/SGS/html/SGS_cst_par): the constant path algorithm with parralelisation. 
+- [``SGS_cst_par_cond.m``](https://Rafnuss-phd.github.io/SGS/html/SGS_cst_par_cond): the constant path algorithm with conditional point.
+- [``SGS_hybrid.m``](https://Rafnuss-phd.github.io/SGS/html/SGS_hybrid): Hydrid constant/randomized path switching at a certain level of the Multi-grid path.
+- [``SGS_varcovar.m``](https://Rafnuss-phd.github.io/SGS/html/SGS_varcovar): Compute the full covariance matrice of the simulation.
 
 
 
@@ -42,7 +42,7 @@ Nussbaumer, Raphaël, Grégoire Mariethoz, Erwan Gloaguen, and Klaus Holliger. (
 
 
 ## SGS with a Constant Path
-In this second paper, I looked at a quite oftenly used technique which consist of using the same simulation path among multiple realizations. This is done in order to be able to reuse the same kriging weights for all realization, which in turn allows a quite drastic reduction of the computational cost. In this work we wanted to quantify the amount of bias added with this technique, and provide some recommendation on the implementation. We showed that these biases were quite unsignificant compared to the computational gain obtained. Have a look a the paper below for more detail. The script [``cst_path_paper/script_paper.m``](https://raphael-nussbaumer-phd.github.io/SGS/cst_path_paper/html/script_paper) shows you how the figure were built.
+In this second paper, I looked at a quite oftenly used technique which consist of using the same simulation path among multiple realizations. This is done in order to be able to reuse the same kriging weights for all realization, which in turn allows a quite drastic reduction of the computational cost. In this work we wanted to quantify the amount of bias added with this technique, and provide some recommendation on the implementation. We showed that these biases were quite unsignificant compared to the computational gain obtained. Have a look a the paper below for more detail. The script [``cst_path_paper/script_paper.m``](https://Rafnuss-phd.github.io/SGS/cst_path_paper/html/script_paper) shows you how the figure were built.
 
 
 **Oral Presentation**
