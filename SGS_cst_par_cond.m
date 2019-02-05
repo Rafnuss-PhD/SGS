@@ -110,7 +110,7 @@ for i_scale = 1:sn
     hd_XY_s = [hd.y(hd.scale>i_scale) hd.x(hd.scale>i_scale)];
     
     %% 5.3 Loop of simulated node
-    for i_pt = start(i_scale)+(1:nb(i_scale))
+    parfor i_pt = start(i_scale)+(1:nb(i_scale))
         %% 5.3.1 Hard data
         hd_XY_d = bsxfun(@minus,hd_XY_s,XY_i(i_pt,:));
         hd_XY_d = hd_XY_d(hd_XY_d(:,1)<covar(1).range(1)*neigh.wradius &  hd_XY_d(:,2)<covar(1).range(2)*neigh.wradius,:);
@@ -166,7 +166,7 @@ for i_scale = 1:sn
                 end
             end
             l = ab_C \ a0_C;
-            LAMBDA(i_pt,1:n) = l;
+            LAMBDA(i_pt,:) = [l; nan(neigh.nb-n,1) ]';
             S(i_pt) = sum([covar.c0]) - l'*a0_C;
         end
     end
@@ -184,7 +184,7 @@ end
 tik.real = tic;
 Rest = nan(ny,nx,m);
 parm_seed_U = parm.seed_U;
-for i_real=1:m
+parfor i_real=1:m
     Res=nan(ny,nx);
     Res(hd.id)=hd.d;
     rng(parm_seed_U);
