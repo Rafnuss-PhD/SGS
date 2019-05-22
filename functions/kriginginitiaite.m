@@ -66,24 +66,23 @@ switch covar.model
         error('Variogram type not defined')
 end
 
-if size(covar.range0)==1 || numel(intvario)==1
+if length(covar.range0)==1 || numel(intvario)==1
     covar.range=covar.range0*intvario(1);
-elseif size(covar.range0)==2
+elseif length(covar.range0)==2
     covar.range=covar.range0*intvario(2);
-elseif size(covar.range0)==3
+elseif length(covar.range0)==3
     covar.range=covar.range0*intvario(3);
 end
 
 
-
-if size(covar(1).range)==1 || numel(covar(1).azimuth)==0
+if length(covar(1).range)==1 || numel(covar(1).azimuth)==0
     covar.cx = 1/diag(covar.range(1));
-elseif size(covar(1).range)==2
+elseif length(covar(1).range)==2
     ang=covar.azimuth; cang=cos(ang/180*pi); sang=sin(ang/180*pi);
     rot = [cang,-sang;sang,cang];
     covar.cx = rot/diag(fliplr(covar.range));
-elseif size(covar.azimuth)==3
-    error('3D')
+elseif length(covar.azimuth)==3
+    error('not working in 3D (yet). Contact me if you need it.')
 end
 
 end
