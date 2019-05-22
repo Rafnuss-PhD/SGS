@@ -79,6 +79,7 @@ switch method
         [Rest, t] = SGS_hybrid(nx,ny,m,covar,neigh,parm);
     case 'varcovar'
         Rest = SGS_varcovar(nx,ny,m,covar,neigh,parm);
+        t=[];
     otherwise
         
 end
