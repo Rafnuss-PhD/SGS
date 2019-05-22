@@ -35,11 +35,11 @@ end
 
 
 %% 2. Initialization Spiral Search
-x = ceil( min(covar(1).range(2)*k.wradius, nx));
-y = ceil( min(covar(1).range(1)*k.wradius, ny));
+x = ceil( min(covar(1).range(2)*neigh.wradius, nx));
+y = ceil( min(covar(1).range(1)*neigh.wradius, ny));
 [ss_Y, ss_X] = ndgrid(-y:y, -x:x);% grid{i_scale} of searching windows
 ss_dist = sqrt( (ss_X/covar(1).range(2)).^2 + (ss_Y/covar(1).range(1)).^2); % find distence
-ss_id_1 = find(ss_dist <= k.wradius); % filter node behind radius.
+ss_id_1 = find(ss_dist <= neigh.wradius); % filter node behind radius.
 rng(parm.seed_search);
 ss_id_1 = ss_id_1(randperm(numel(ss_id_1)));
 [~, ss_id_2] = sort(ss_dist(ss_id_1)); % sort according distence.
