@@ -32,7 +32,7 @@ if parm.mg
    end
 else
    id=find(isnan(Path));
-   path = id;%(randperm(numel(id)));
+   path = id(randperm(numel(id)));
    Path(path) = 1:numel(id);
    ds=1; nb = numel(id); start=[0 nb]; sn=1;
 end
