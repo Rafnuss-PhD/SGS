@@ -80,7 +80,7 @@ if length(covar(1).range)==1 || numel(covar(1).azimuth)==0
 elseif length(covar(1).range)==2
     ang=covar.azimuth; cang=cos(ang/180*pi); sang=sin(ang/180*pi);
     rot = [cang,-sang;sang,cang];
-    covar.cx = rot/diag(fliplr(covar.range));
+    covar.cx = rot/diag(covar.range);
 elseif length(covar.azimuth)==3
     error('not working in 3D (yet). Contact me if you need it.')
 end
